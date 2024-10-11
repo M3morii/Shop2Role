@@ -44,6 +44,7 @@ public function login(Request $request)
 
     return response()->json([
         'token' => $user->createToken('API Token')->plainTextToken,
-        'role' => $role]);
+        'role' => $role
+    ]);
 }
 }

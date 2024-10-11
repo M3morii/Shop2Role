@@ -29,33 +29,30 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <script>
     $('#loginForm').on('submit', function(e) {
-        e.preventDefault();
-        $.ajax({
-            url: 'api/login', // Endpoint API login
-            method: 'POST',
-            data: {
-                email: $('#email').val(),
-                password: $('#password').val(),
-            },
-            success: function(response) {
-                // Cek role pengguna dari response
-                if (response.role === 'admin') {
-                    window.location.href = '/admin'; // Redirect ke halaman admin
-                } else if (response.role === 'customer') {
-                    window.location.href = '/customer'; // Redirect ke halaman customer
-                } else {
-                    $('#loginMessage').text('Role tidak dikenali.');
-                }
-            },
-            error: function(xhr) {
-                $('#loginMessage').text(xhr.responseJSON.message);
-            }
-        });
-    });
+    e.preventDefault();
+    $.ajax({
+        url: 'api/login', // Endpoint API login
+        method: 'POST',
+        data: {
+            email: $('#email').val(),
+            password: $('#password').val(),
+        },
+        success: function(response) {
+            localStorage.setItem('token', response.token);
 
-    $('#toRegisterBtn').click(function() {
-        window.location.href = '/register'; // Redirect ke halaman register
+            if (response.role === 'admin') {
+                window.location.href = '/items';
+            } else if (response.role === 'customer') {
+                window.location.href = '/customer';
+            } else {
+                $('#loginMessage').text('Role tidak dikenali.');
+            }
+        },
+        error: function(xhr) {
+            $('#loginMessage').text(xhr.responseJSON.message);
+        }
     });
+});
 </script>
 </body>
 </html>

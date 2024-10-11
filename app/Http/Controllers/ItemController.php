@@ -9,7 +9,21 @@ class ItemController extends Controller
 {
     public function index()
 {
-    return Item::all();
+    $items = Item::all();
+
+    $formattedItems = $items->map(function ($item) {
+        $file = str_replace('public','storage',$item->file);
+        return [
+            'id' => $item->id,
+            'name' => $item->name,
+            'description' => $item->description,
+            'price' => 'RP ' . number_format($item->price, 0, ',', '.'),
+            'stock' => $item->stock,
+            'file' => url( $file), // Menghasilkan URL lengkap untuk file
+        ];
+    });
+
+    return response()->json($formattedItems);
 }
 
 public function store(Request $request)
@@ -22,7 +36,7 @@ public function store(Request $request)
         'file' => 'required|image',
     ]);
 
-    $path = $request->file('file')->store('images');
+    $path = $request->file('file')->store('public/images');
 
     $item = Item::create([
         'name' => $request->name,

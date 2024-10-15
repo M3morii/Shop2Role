@@ -171,8 +171,8 @@
     error: function(error) {
         console.error(error);
     }
-});
-    }
+    });
+}
 
 
     function clearForm() {

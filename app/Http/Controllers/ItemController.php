@@ -1,87 +1,78 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Item;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ItemController extends Controller
 {
+    // Menampilkan semua item (list)
     public function index()
-{
-    $items = Item::all();
-
-    $formattedItems = $items->map(function ($item) {
-        $file = str_replace('public','storage',$item->file);
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'description' => $item->description,
-            'price' => 'RP ' . number_format($item->price, 0, ',', '.'),
-            'stock' => $item->stock,
-            'file' => url( $file), // Menghasilkan URL lengkap untuk file
-        ];
-    });
-
-    return response()->json($formattedItems);
-}
-
-public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string',
-        'description' => 'required|string',
-        'price' => 'required|numeric',
-        'stock' => 'required|integer',
-        'file' => 'required|image',
-    ]);
-
-    $path = $request->file('file')->store('public/images');
-
-    $item = Item::create([
-        'name' => $request->name,
-        'description' => $request->description,
-        'price' => $request->price,
-        'stock' => $request->stock,
-        'file' => $path,
-    ]);
-
-    return response()->json($item, 201);
-}
-
-public function update(Request $request, $id)
-{
-    // Temukan item atau kembalikan 404
-    $item = Item::findOrFail($id);
-
-    // Validasi
-    $request->validate([
-        'name' => 'string',
-        'description' => 'string',
-        'price' => 'numeric',
-        'stock' => 'integer',
-        'file' => 'image', // Validasi hanya jika file ada
-    ]);
-
-    // Periksa apakah ada file baru
-    if ($request->hasFile('file')) {
-        // Simpan file baru
-        $path = $request->file('file')->store('images');
-        $item->file = $path; // Update path file ke yang baru
+    {
+        $items = Item::all();
+        return response()->json($items, 200);
     }
 
-    // Update hanya field yang terisi dalam request
-    $item->update($request->only('name', 'description', 'price', 'stock'));
+    // Menampilkan detail item berdasarkan ID (show)
+    public function show($id)
+    {
+        $item = Item::find($id);
 
-    return response()->json($item);
-}
+        if (!$item) {
+            return response()->json(['message' => 'Item not found'], 404);
+        }
 
-public function destroy($id)
-{
-    $item = Item::findOrFail($id); // Temukan item atau kembalikan 404
-    $item->delete();
+        return response()->json($item, 200);
+    }
 
-    return response()->json(null, 204);
-}
+    // Fungsi untuk menambah atau memperbarui item
+    public function storeOrUpdate(Request $request, $id = null)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'sellprice' => 'required|numeric',
+            'finalstock' => 'required|integer',
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        // Jika ID ada, maka update; jika tidak, buat item baru
+        $item = $id ? Item::find($id) : new Item;
+
+        if ($id && !$item) {
+            return response()->json(['message' => 'Item not found'], 404);
+        }
+
+        $item->name = $request->name;
+        $item->description = $request->description;
+        $item->sellprice = $request->sellprice;
+        $item->finalstock = $request->finalstock;
+
+        if ($item->save()) {
+            $message = $id ? 'Item updated successfully' : 'Item created successfully';
+            return response()->json(['message' => $message, 'item' => $item], 200);
+        }
+
+        return response()->json(['message' => 'Error saving item'], 500);
+    }
+
+    // Fungsi untuk menghapus item
+    public function destroy($id)
+    {
+        $item = Item::find($id);
+
+        if (!$item) {
+            return response()->json(['message' => 'Item not found'], 404);
+        }
+
+        if ($item->delete()) {
+            return response()->json(['message' => 'Item deleted successfully'], 200);
+        }
+
+        return response()->json(['message' => 'Error deleting item'], 500);
+    }
 }

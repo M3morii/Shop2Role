@@ -1,79 +1,69 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Cart;
+use App\Models\Cart; // Pastikan Anda memiliki model Cart
 
 class CartController extends Controller
 {
-
-    public function show(Request $request)
+    public function index()
     {
-        // Ambil cart items untuk user yang sedang login
-        $cartItems = Cart::where('user_id', $request->user()->id)->with('item')->get();
-
-        return response()->json($cartItems);
+        // Mengambil semua item di cart pengguna yang sedang login
+        return Cart::where('user_id', auth()->id())->get();
     }
-    public function addToCart(Request $request)
-{
-    // Validasi request
-    $request->validate([
-        'item_id' => 'required|integer|exists:items,id',
-        'quantity' => 'required|integer|min:1',
-    ]);
 
-    // Mendapatkan user yang sedang login
-    $user = Auth::user();
-
-    // Menggunakan firstOrCreate untuk menambahkan item ke cart
-    $cart = Cart::firstOrCreate(
-        ['user_id' => $user->id, 'item_id' => $request->item_id], // Cek jika item sudah ada di cart
-        ['quantity' => 0] // Jika tidak ada, inisialisasi quantity
-    );
-
-    // Update quantity item di cart
-    $cart->quantity += $request->quantity;
-    $cart->save();
-
-    return response()->json(['message' => 'Item added to cart successfully!', 'cart' => $cart], 200);
-}
-
-    public function removeFromCart(Request $request)
+    public function store(Request $request)
     {
-        // Validasi request
+        // Validasi input
         $request->validate([
-            'item_id' => 'required|integer|exists:items,id',
-            'quantity' => 'required|integer|min:1', // Tambahkan jumlah yang ingin dikurangi
+            'item_id' => 'required|exists:items,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+    
+        // Menambahkan item ke cart menggunakan firstOrCreate
+        $cartItem = Cart::firstOrCreate(
+            ['user_id' => auth()->id(), 'item_id' => $request->item_id],
+            ['quantity' => $request->quantity]
+        );
+    
+        // Jika item sudah ada di cart, tambahkan jumlahnya
+        if (!$cartItem->wasRecentlyCreated) {
+            $cartItem->increment('quantity', $request->quantity);
+        }
+    
+        return response()->json($cartItem, 201);
+    }
+    
+
+    public function update(Request $request, $id)
+    {
+        // Validasi input
+        $request->validate([
+            'quantity' => 'required|integer|min:1',
         ]);
 
-        // Mendapatkan user yang sedang login
-        $user = Auth::user();
+        // Memperbarui jumlah item di cart
+        $cartItem = Cart::findOrFail($id);
+        $cartItem->quantity = $request->quantity;
+        $cartItem->save();
 
-        // Mencari item di cart berdasarkan user_id dan item_id
-        $cartItem = Cart::where('user_id', $user->id)
-            ->where('item_id', $request->item_id)
-            ->first();
-
-        // Jika item ditemukan di cart
-        if ($cartItem) {
-            // Kurangi quantity item
-            $cartItem->quantity -= $request->quantity;
-
-            // Jika quantity <= 0, hapus item dari cart
-            if ($cartItem->quantity <= 0) {
-                $cartItem->delete();
-                return response()->json(['message' => 'Item removed from cart successfully!'], 200);
-            } else {
-                // Jika masih ada quantity tersisa, simpan perubahan
-                $cartItem->save();
-                return response()->json(['message' => 'Quantity updated successfully!', 'remaining_quantity' => $cartItem->quantity], 200);
-            }
-        }
-
-        // Jika item tidak ditemukan di cart
-        return response()->json(['message' => 'Item not found in cart!'], 404);
+        return response()->json($cartItem);
     }
 
+    public function destroy($id)
+    {
+        // Menghapus item dari cart
+        $cartItem = Cart::findOrFail($id);
+        $cartItem->delete();
+
+        return response()->json(['message' => 'Item removed from cart.']);
+    }
+
+    public function clear()
+    {
+        // Menghapus semua item dari cart pengguna yang sedang login
+        Cart::where('user_id', auth()->id())->delete();
+
+        return response()->json(['message' => 'Cart cleared.']);
+    }
 }

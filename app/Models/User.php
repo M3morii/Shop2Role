@@ -1,36 +1,28 @@
 <?php
+
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use HasApiTokens, HasFactory;
 
     protected $fillable = [
-        'name',
-        'email',
         'username',
+        'email',
         'password',
-        'role',
+        'role_id',
     ];
-
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    public function isAdmin()
+    public function role()
     {
-        return $this->role === 'admin';
-    }
-
-    public function isCustomer()
-    {
-        return $this->role === 'customer';
+        return $this->belongsTo(Role::class);
     }
 
     public function orders()
@@ -38,9 +30,8 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
-    
-    public function carts()
+    public function cart()
     {
-        return $this->hasMany(Cart::class);
+        return $this->hasOne(Cart::class);
     }
 }

@@ -3,48 +3,46 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
     public function register(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string',
-        'username' => 'required|string',
-        'email' => 'required|string|email|unique:users',
-        'password' => 'required|string|confirmed',
-    ]);
+    {
+        // Validasi input
+        $validatedData = $request->validate([
+            'username' => 'required|string|unique:users,username',
+            'email' => 'required|string|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+    
+        // Membuat pengguna baru dengan role customer
+        User::create([
+            'username' => $validatedData['username'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
+            'role_id' => 2, // Misalnya, role_id untuk customer
+        ]);
+    
+        return response()->json(['message' => 'User registered successfully'], 201);
+    }
+    
 
-    $user = User::create([
-        'name' => $request->name,
-        'username' => $request->username,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-    ]);
-
-    return response()->json(['token' => $user->createToken('API Token')->plainTextToken]);
-}
 
 public function login(Request $request)
 {
-    $request->validate([
-        'email' => 'required|string|email',
-        'password' => 'required|string',
-    ]);
+    $credentials = $request->only('email', 'password');
 
-    $user = User::where('email', $request->email)->first();
+    if (Auth::attempt($credentials)) {
+        $user = Auth::user();
+        $token = $user->createToken('authToken')->plainTextToken;
 
-    if (!$user || !Hash::check($request->password, $user->password)) {
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Login successful', 'token' => $token], 200);
     }
 
-    $role = $user->role;
-
-    return response()->json([
-        'token' => $user->createToken('API Token')->plainTextToken,
-        'role' => $role
-    ]);
+    return response()->json(['message' => 'Unauthorized'], 401);
 }
 }

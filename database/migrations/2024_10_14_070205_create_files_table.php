@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('item_id')->constrained('items')->onDelete('cascade');
             $table->string('file_path');
             $table->string('extension')->nullable(); // Menyimpan ekstensi file
             $table->timestamps();

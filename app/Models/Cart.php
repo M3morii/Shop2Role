@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
-    protected $fillable = ['user_id'];
+    protected $fillable = ['user_id', 'quantity', 'item_id'];
 
     public function user()
     {
@@ -15,6 +15,6 @@ class Cart extends Model
 
     public function items()
     {
-        return $this->belongsToMany(Item::class, 'cart_items')->withPivot('quantity');
+        return $this->belongsTo(Item::class, 'item_id');
     }
 }

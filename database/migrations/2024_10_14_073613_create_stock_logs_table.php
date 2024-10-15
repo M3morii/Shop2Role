@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('stock_logs', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('item_id')->constrained('items')->onDelete('cascade');
             $table->foreignId('stock_id')->constrained('stocks')->onDelete('cascade'); // Relasi ke tabel stocks
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Relasi ke tabel users
             $table->integer('quantity_change'); // Perubahan kuantitas (positif atau negatif)

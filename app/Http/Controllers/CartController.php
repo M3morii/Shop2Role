@@ -1,69 +1,72 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Cart; // Pastikan Anda memiliki model Cart
+use App\Models\Cart;
+use App\Models\Item;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
+    // Menampilkan keranjang pengguna yang sedang login
     public function index()
     {
-        // Mengambil semua item di cart pengguna yang sedang login
-        return Cart::where('user_id', auth()->id())->get();
+        $user = Auth::user();
+        $cartItems = Cart::where('user_id', $user->id)->with('items')->get();
+
+        return response()->json([
+            'success' => true,
+            'cart' => $cartItems
+        ]);
     }
 
-    public function store(Request $request)
+    // Menambahkan item ke keranjang atau memperbarui kuantitas jika sudah ada
+    public function storeOrUpdate(Request $request)
     {
-        // Validasi input
+        $user = Auth::user();
+
+        // Validasi request
         $request->validate([
             'item_id' => 'required|exists:items,id',
             'quantity' => 'required|integer|min:1',
         ]);
-    
-        // Menambahkan item ke cart menggunakan firstOrCreate
-        $cartItem = Cart::firstOrCreate(
-            ['user_id' => auth()->id(), 'item_id' => $request->item_id],
-            ['quantity' => $request->quantity]
+
+        // Cari atau buat entri keranjang
+        $cart = Cart::firstOrCreate(
+            ['user_id' => $user->id, 'item_id' => $request->item_id],
+            ['quantity' => 0] // Set initial quantity to 0
         );
-    
-        // Jika item sudah ada di cart, tambahkan jumlahnya
-        if (!$cartItem->wasRecentlyCreated) {
-            $cartItem->increment('quantity', $request->quantity);
-        }
-    
-        return response()->json($cartItem, 201);
-    }
-    
 
-    public function update(Request $request, $id)
-    {
-        // Validasi input
-        $request->validate([
-            'quantity' => 'required|integer|min:1',
+        // Update quantity
+        $cart->quantity += $request->quantity;
+        $cart->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Item berhasil ditambahkan/diupdate di keranjang',
+            'cart' => $cart
         ]);
-
-        // Memperbarui jumlah item di cart
-        $cartItem = Cart::findOrFail($id);
-        $cartItem->quantity = $request->quantity;
-        $cartItem->save();
-
-        return response()->json($cartItem);
     }
 
+    // Menghapus item dari keranjang
     public function destroy($id)
     {
-        // Menghapus item dari cart
-        $cartItem = Cart::findOrFail($id);
-        $cartItem->delete();
+        $user = Auth::user();
+        $cart = Cart::where('id', $id)->where('user_id', $user->id)->first();
 
-        return response()->json(['message' => 'Item removed from cart.']);
-    }
+        if (!$cart) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item tidak ditemukan di keranjang'
+            ], 404);
+        }
 
-    public function clear()
-    {
-        // Menghapus semua item dari cart pengguna yang sedang login
-        Cart::where('user_id', auth()->id())->delete();
+        $cart->delete();
 
-        return response()->json(['message' => 'Cart cleared.']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Item berhasil dihapus dari keranjang'
+        ]);
     }
 }

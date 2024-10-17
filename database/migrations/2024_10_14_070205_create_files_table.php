@@ -17,7 +17,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('item_id')->constrained('items')->onDelete('cascade');
             $table->string('file_path');
-            $table->string('extension')->nullable(); // Menyimpan ekstensi file
             $table->timestamps();
         });
     }

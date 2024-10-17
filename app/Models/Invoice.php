@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Invoice extends Model
 {
-    protected $fillable = ['total_price', 'purchase_date'];
+    protected $fillable = ['user_id', 'total_price', 'purchase_date'];
 
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

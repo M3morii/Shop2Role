@@ -36,7 +36,10 @@ class ItemController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'sellprice' => 'required|numeric',
-            'files' => 'nullable|array',
+            'stock' => 'required|numeric',
+            'type' => 'required',
+            'quantity' => 'required',
+            'files' => 'nullable',
             'files.*' => 'file|mimes:jpeg,png,jpg,gif,mp4|max:2048' // Atur sesuai dengan kebutuhan
         ]);
 
@@ -48,12 +51,17 @@ class ItemController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'sellprice' => $request->sellprice,
+            'stock' => $request->stock,
         ]);
 
         Stock::create([
             'item_id' => $item->id,
-            
+            'type' => $request->type,
+            'quantity' => $request->quantity
         ]);
+
+
+
 
         // Menyimpan file jika ada
         if ($request->hasFile('files')) {
@@ -62,7 +70,6 @@ class ItemController extends Controller
                 File::create([
                     'item_id' => $item->id,
                     'file_path' => $filePath,
-                    'file_type' => $file->getClientOriginalExtension(),
                 ]);
             }
         }

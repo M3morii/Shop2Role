@@ -6,15 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Stock extends Model
 {
-    protected $fillable = ['item_id', 'buyprice', 'finalstock', 'quantity'];
+    protected $fillable = ['item_id', 'type', 'quantity'];
 
     public function item()
     {
         return $this->belongsTo(Item::class);
-    }
-
-    public function stockLogs()
-    {
-        return $this->hasMany(StockLog::class);
     }
 }

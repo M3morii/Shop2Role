@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('item_id')->constrained('items')->onDelete('cascade'); // Relasi ke tabel items
             $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade'); // Relasi ke tabel items
             $table->integer('quantity');
+            $table->string('status')->default('pending');
             $table->decimal('price', 10, 2); // Harga saat pemesanan
             $table->timestamps();
         });

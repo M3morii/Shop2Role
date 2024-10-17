@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->decimal('total_price', 10, 2); // Total harga dari pesanan
-            $table->date('purchase_date'); // Tanggal pembelian
+            $table->decimal('total_price', 10, 2)->nullable(); // Akan diisi saat admin approve
+            $table->timestamp('purchase_date')->nullable(); // Akan diisi setelah approval
             $table->timestamps();
         });
     }

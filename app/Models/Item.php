@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Item extends Model
 {
-    protected $fillable = ['name', 'description', 'sellprice'];
+    use HasFactory;
+    protected $fillable = ['name', 'description', 'sellprice', 'stock'];
 
     public function stocks()
     {

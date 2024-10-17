@@ -14,6 +14,7 @@ class AuthController extends Controller
     {
         // Validasi input
         $validatedData = $request->validate([
+            'name' => 'required|string',
             'username' => 'required|string|unique:users,username',
             'email' => 'required|string|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
@@ -21,6 +22,7 @@ class AuthController extends Controller
     
         // Membuat pengguna baru dengan role customer
         User::create([
+            'name' => $validatedData['name'],
             'username' => $validatedData['username'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),

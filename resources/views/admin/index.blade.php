@@ -3,260 +3,390 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Item List</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-dark.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <title>Admin Item List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #343a40;
-            color: #ffffff;
+            background-color: #ffffff;
+            color: #000000;
         }
         .table {
-            background-color: #ffffff;
-            color: #000000;
-        }
-        .table th {
             background-color: #f8f9fa;
+        }
+        .table th, .table td {
             color: #000000;
         }
-        .table td {
-            color: #000000;
-        }
-        .modal-content {
-            background-color: #ffffff;
-        }
-        h2 {
+        .table thead th {
+            background-color: #6c757d;
             color: #ffffff;
         }
-        .btn-primary {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-        }
-        .btn-primary:hover {
-            background-color: #0b5ed7;
-            border-color: #0a58ca;
-        }
-        .btn-warning, .btn-danger {
+        .btn-custom {
+            background-color: #007bff;
             color: #ffffff;
         }
     </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
     <div class="container mt-5">
-        <h2 class="mb-4 text-center">Item List</h2>
-        <button class="btn btn-primary mb-3" id="addItemBtn" data-bs-toggle="modal" data-bs-target="#addItemModal">Add Item</button>
-        
-        <table class="table table-striped table-bordered">
+        <h2 class="text-center">Item List</h2>
+        <button class="btn btn-success mb-3" id="addNewItem">Tambah Barang Baru</button>
+        <table class="table table-striped table-hover">
             <thead>
                 <tr>
                     <th>No</th>
                     <th>Name</th>
                     <th>Description</th>
-                    <th>Price</th>
                     <th>Stock</th>
+                    <th>Sell Price</th>
                     <th>Files</th>
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="itemList"></tbody>
+            <tbody id="itemTable">
+                <!-- Item rows will be added here -->
+            </tbody>
         </table>
     </div>
 
-<!-- Modal Add Item -->
-<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content" style="background-color: #343a40;">
-            <div class="modal-header">
-                <h5 class="modal-title text-white" id="addItemModalLabel">Add Item</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addItemForm" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label for="addItemName" class="form-label text-white">Name</label>
-                        <input type="text" class="form-control" id="addItemName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="addItemDescription" class="form-label text-white">Description</label>
-                        <textarea class="form-control" id="addItemDescription" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="addItemPrice" class="form-label text-white">Price</label>
-                        <input type="text" class="form-control" id="addItemPrice" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="addItemStock" class="form-label text-white">Stock</label>
-                        <input type="number" class="form-control" id="addItemStock" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="addItemFile" class="form-label text-white">Image</label>
-                        <input type="file" class="form-control" id="addItemFile" required accept="image/*">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Add Item</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Edit Item -->
-<div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content" style="background-color: #343a40;">
-            <div class="modal-header">
-                <h5 class="modal-title text-white" id="editItemModalLabel">Edit Item</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editItemForm" enctype="multipart/form-data">
-                    <input type="hidden" id="editItemId">
-                    <div class="mb-3">
-                        <label for="editItemName" class="form-label text-white">Name</label>
-                        <input type="text" class="form-control" id="editItemName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editItemDescription" class="form-label text-white">Description</label>
-                        <textarea class="form-control" id="editItemDescription" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editItemPrice" class="form-label text-white">Price</label>
-                        <input type="text" class="form-control" id="editItemPrice" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editItemStock" class="form-label text-white">Stock</label>
-                        <input type="number" class="form-control" id="editItemStock" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editItemFile" class="form-label text-white">Image</label>
-                        <input type="file" class="form-control" id="editItemFile" accept="image/*">
-                        <small class="text-white">Leave blank to keep the current image.</small>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Update Item</button>
-                </form>
+    <!-- Modal Edit Stock -->
+    <div class="modal fade" id="editStockModal" tabindex="-1" role="dialog" aria-labelledby="editStockModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editStockModalLabel">Edit Stock</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editStockForm">
+                        <input type="hidden" id="editStockItemId">
+                        <div class="form-group">
+                            <label>Current Stock: <span id="currentStock"></span></label>
+                        </div>
+                        <div class="form-group">
+                            <label>Stock Type:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="stockType" id="stockTypeIn" value="in" checked>
+                                <label class="form-check-label" for="stockTypeIn">
+                                    In (Tambah Stok)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="stockType" id="stockTypeOut" value="out">
+                                <label class="form-check-label" for="stockTypeOut">
+                                    Out (Kurangi Stok)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="stockQuantity">Quantity:</label>
+                            <input type="number" class="form-control" id="stockQuantity" required min="1">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveStockChanges">Save changes</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    function fetchItems(){
-        const token = localStorage.getItem('token');
-        $.ajax({
-    url: '/api/items',
-    method: 'GET',
-    headers: {
-        'Authorization': 'Bearer ' + token
-    },
-    dataType: 'json',  // Menentukan tipe data yang diharapkan
-    success: function(items) {
-        $('#itemList').empty();
-        items.forEach((item, index) => {
-            $('#itemList').append(`
-                <tr>
-                    <td style="color: #000000;">${index + 1}</td>
-                    <td style="color: #000000;">${item.name}</td>
-                    <td style="color: #000000;">${item.description}</td>
-                    <td style="color: #000000;">${item.price}</td>
-                    <td style="color: #000000;">${item.stock}</td>
-                    <td><img src="${item.file}" style="width: 40px; height: 40px;"></td>
-                    <td>
-                        <button class="btn btn-warning editItemBtn" data-id="${item.id}" data-bs-toggle="modal" data-bs-target="#editItemModal">Edit</button>
-                        <button class="btn btn-danger deleteItemBtn" data-id="${item.id}">Delete</button>
-                    </td>
-                </tr>
-            `);
-        });
-    },
-    error: function(error) {
-        console.error(error);
-    }
-    });
-}
+    <!-- Modal Edit Item -->
+    <div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-labelledby="editItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editItemModalLabel">Edit Item</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editItemForm">
+                        <input type="hidden" id="editItemId">
+                        <div class="form-group">
+                            <label for="editItemName">Name:</label>
+                            <input type="text" class="form-control" id="editItemName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editItemDescription">Description:</label>
+                            <textarea class="form-control" id="editItemDescription" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editItemSellPrice">Sell Price:</label>
+                            <input type="number" class="form-control" id="editItemSellPrice" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveItemChanges">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Modal Tambah Item Baru -->
+    <div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addItemModalLabel">Tambah Barang Baru</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addItemForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="addItemName">Nama:</label>
+                            <input type="text" class="form-control" id="addItemName" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addItemDescription">Deskripsi:</label>
+                            <textarea class="form-control" id="addItemDescription" name="description" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="addItemSellPrice">Harga Jual:</label>
+                            <input type="number" class="form-control" id="addItemSellPrice" name="sellprice" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addItemStock">Stok Awal:</label>
+                            <input type="number" class="form-control" id="addItemStock" name="stock" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addItemFiles">File (Gambar/Video):</label>
+                            <input type="file" class="form-control-file" id="addItemFiles" name="files[]" multiple>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="saveNewItem">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function clearForm() {
-        $('#editItemId').val('');
-        $('#editItemForm')[0].reset();
-        $('#editItemModalLabel').text('Edit Item');
-    }
-
+    <script>
     $(document).ready(function() {
-        fetchItems();
+        var token = sessionStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
 
-        // Handle Add Item form submission
-        $('#addItemForm').submit(function(event) {
-            event.preventDefault();
-            const token = localStorage.getItem('token');
-            const formData = new FormData(this); // Use FormData to handle file uploads
-
+        function loadItems() {
             $.ajax({
                 url: '/api/items',
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    if (response && response.length > 0) {
+                        let rows = '';
+                        $.each(response, function(index, item) {
+                            let filesList = '';
+                            if (item.files && item.files.length > 0) {
+                                filesList = '<div class="file-list">';
+                                item.files.forEach(file => {
+                                    const fileName = file.file_path.split('/').pop();
+                                    filesList += `<img src="/storage/${file.file_path}" alt="${fileName}" class="file-thumbnail" style="width: 50px; height: auto; margin-right: 5px;">`;
+                                });
+                                filesList += '</div>';
+                            } else {
+                                filesList = 'Tidak ada file';
+                            }
+                            rows += `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${item.name}</td>
+                                    <td>${item.description}</td>
+                                    <td>${item.stock}</td>
+                                    <td>Rp ${Number(item.sellprice).toLocaleString('id-ID')}</td>
+                                    <td>${filesList}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary edit-item" data-id="${item.id}">Edit Item</button>
+                                        <button class="btn btn-sm btn-info edit-stock" data-id="${item.id}">Edit Stok</button>
+                                        <button class="btn btn-sm btn-danger delete-item" data-id="${item.id}">Hapus</button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        $('#itemTable').html(rows);
+
+                        // Event listeners untuk tombol-tombol
+                        $('.edit-item').click(function() {
+                            var itemId = $(this).data('id');
+                            // Ambil data item dan isi form
+                            $.ajax({
+                                url: '/api/admin/items/' + itemId,
+                                method: 'GET',
+                                headers: {
+                                    'Authorization': 'Bearer ' + token
+                                },
+                                success: function(item) {
+                                    $('#editItemId').val(item.id);
+                                    $('#editItemName').val(item.name);
+                                    $('#editItemDescription').val(item.description);
+                                    $('#editItemSellPrice').val(Number(item.sellprice).toLocaleString('id-ID'));
+                                    $('#editItemModal').modal('show');
+                                },
+                                error: function() {
+                                    alert('Gagal mengambil data item');
+                                }
+                            });
+                        });
+
+                        $('.edit-stock').click(function() {
+                            var itemId = $(this).data('id');
+                            $('#editStockItemId').val(itemId);
+                            
+                            // Ambil data stok saat ini
+                            $.ajax({
+                                url: '/api/admin/stocks/' + itemId,
+                                method: 'GET',
+                                headers: {
+                                    'Authorization': 'Bearer ' + token
+                                },
+                                success: function(response) {
+                                    $('#currentStock').text(response.quantity);
+                                    $('#editStockModal').modal('show');
+                                },
+                                error: function() {
+                                    alert('Gagal mengambil data stok');
+                                }
+                            });
+                        });
+
+                        $('.delete-item').click(function() {
+                            var itemId = $(this).data('id');
+                            if (confirm('Apakah Anda yakin ingin menghapus item ini?')) {
+                                $.ajax({
+                                    url: '/api/admin/items/' + itemId,
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Authorization': 'Bearer ' + token
+                                    },
+                                    success: function(response) {
+                                        alert('Item berhasil dihapus');
+                                        loadItems();
+                                    },
+                                    error: function(xhr) {
+                                        alert('Gagal menghapus item');
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        $('#itemTable').html('<tr><td colspan="7" class="text-center">Tidak ada item ditemukan</td></tr>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    if (xhr.status === 401) {
+                        alert('Sesi Anda telah berakhir. Silakan login kembali.');
+                        sessionStorage.removeItem('access_token');
+                        window.location.href = '/login';
+                    } else {
+                        $('#itemTable').html('<tr><td colspan="7" class="text-center">Error mengambil data</td></tr>');
+                    }
+                }
+            });
+        }
+
+        loadItems();
+
+        // Handle edit stock
+        $('#saveStockChanges').click(function() {
+            var itemId = $('#editStockItemId').val();
+            var quantity = $('#stockQuantity').val();
+            var type = $('input[name="stockType"]:checked').val();
+
+            $.ajax({
+                url: '/api/admin/stocks',
                 method: 'POST',
                 headers: {
                     'Authorization': 'Bearer ' + token
                 },
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function() {
-                    fetchItems();
-                    $('#addItemModal').modal('hide');
+                data: {
+                    item_id: itemId,
+                    quantity: quantity,
+                    type: type
+                },
+                success: function(response) {
+                    alert('Stok berhasil diperbarui');
+                    $('#editStockModal').modal('hide');
+                    loadItems();
                 },
                 error: function(xhr) {
-                    alert(xhr.responseJSON.message);
+                    alert('Gagal memperbarui stok: ' + xhr.responseJSON.message);
                 }
             });
         });
 
-        // Handle Edit button click
-        $(document).on('click', '.editItemBtn', function() {
-            const id = $(this).data('id');
+        // Handle edit item
+        $('#saveItemChanges').click(function() {
+            var itemId = $('#editItemId').val();
+            var itemData = {
+                name: $('#editItemName').val(),
+                description: $('#editItemDescription').val(),
+                sellprice: $('#editItemSellPrice').val().replace(/\D/g, '') // Hapus semua karakter non-digit
+            };
             $.ajax({
-                url: `/api/items/${id}`,
+                url: '/api/admin/items/' + itemId,
                 method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                },
-                success: function(item) {
-                    $('#editItemId').val(item.id);
-                    $('#editItemName').val(item.name);
-                    $('#editItemDescription').val(item.description);
-                    $('#editItemPrice').val(item.price);
-                    $('#editItemStock').val(item.stock);
-                },
-                error: function(xhr) {
-                    alert(xhr.responseJSON.message);
-                }
-            });
-        });
-
-        // Handle Edit Item form submission
-        $('#editItemForm').submit(function(event) {
-            event.preventDefault();
-            const token = localStorage.getItem('token');
-            const id = $('#editItemId').val();
-            const formData = new FormData(this); 
-
-            $.ajax({
-                url: `/api/items/${id}`,
-                method: 'POST', // Use POST with '_method' for PUT
                 headers: {
                     'Authorization': 'Bearer ' + token
                 },
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function() {
-                    fetchItems();
+                data: itemData,
+                success: function(response) {
+                    alert('Item berhasil diperbarui');
                     $('#editItemModal').modal('hide');
+                    loadItems();
                 },
                 error: function(xhr) {
-                    alert(xhr.responseJSON.message);
+                    alert('Gagal memperbarui item');
+                }
+            });
+        });
+
+        // Tambahkan ini di dalam script yang sudah ada
+        $('#addNewItem').click(function() {
+            $('#addItemModal').modal('show');
+        });
+
+        $('#saveNewItem').click(function() {
+            var formData = new FormData($('#addItemForm')[0]);
+            
+            $.ajax({
+                url: '/api/admin/items',
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    alert('Item baru berhasil ditambahkan');
+                    $('#addItemModal').modal('hide');
+                    $('#addItemForm')[0].reset();
+                    loadItems();
+                },
+                error: function(xhr) {
+                    alert('Gagal menambahkan item baru: ' + xhr.responseJSON.message);
                 }
             });
         });
     });
-</script>
+    </script>
 </body>
 </html>

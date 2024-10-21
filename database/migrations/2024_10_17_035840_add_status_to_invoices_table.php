@@ -24,5 +24,4 @@ public function down()
         $table->dropColumn('status'); // Menghapus kolom status jika migration dirollback
     });
 }
-
 };

@@ -7,48 +7,56 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\InvoiceController;
 
+// Rute autentikasi
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Admin routes
+    // Rute publik untuk mengambil daftar barang
+    Route::get('/items', [ItemController::class, 'index']);
+    Route::get('/stocks', [StockController::class, 'index']);
+// Rute admin
 Route::group([
     'prefix' => 'admin',
     'middleware' => ['auth:sanctum', 'role:1']
 ], function() {
-
-    Route::get('/items', [ItemController::class, 'index']);
+    // Item Routes
+    // Route::get('/items', [ItemController::class, 'index']);
     Route::get('/items/{id}', [ItemController::class, 'show']);
     Route::post('/items', [ItemController::class, 'store']);
     Route::post('/items/{id}', [ItemController::class, 'update']);
     Route::delete('/items/{id}', [ItemController::class, 'destroy']);
 
     // Stock Routes
-    Route::get('/stocks', [StockController::class, 'index']);
+    
     Route::post('/stocks', [StockController::class, 'updateStock']);
+    Route::get('/stocks/{itemId}', [StockController::class, 'show']);
 
     // File Routes
     Route::post('/items/{itemId}/files', [FileController::class, 'store']);
     Route::delete('/files/{id}', [FileController::class, 'destroy']);
 
-    // Routes untuk InvoiceController
-    Route::get('/invoices', [InvoiceController::class, 'index']); // Melihat daftar faktur
-    Route::get('/invoices/{id}', [InvoiceController::class, 'showInvoice']); // Melihat detail faktur
+    // Invoice Routes
+    Route::get('/invoice', [InvoiceController::class, 'index']);
+    Route::get('/invoice/{id}', [InvoiceController::class, 'showInvoice']);
 
-    // Routes orders (admin)
-    Route::get('/orders', [OrderController::class, 'index']); // Untuk admin
+    // Order Routes
+    Route::get('/orders', [OrderController::class, 'index']);
     Route::put('/orders/{id}/approve', [OrderController::class, 'approve']);
     Route::put('/orders/{id}/decline', [OrderController::class, 'decline']);
 });
 
 // Customer routes
 Route::group(['middleware' => ['auth:sanctum', 'role:2']], function() {
-    Route::get('/cart/{id}', [CartController::class, 'index']); // Menampilkan keranjang
-    Route::post('/cart/{id}', [CartController::class, 'storeOrUpdate']); // Menambah item ke keranjang
-    Route::delete('/cart/{id}', [CartController::class, 'removeFromCart']); // Menghapus item dari keranjang
+    // Cart Routes
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart', [CartController::class, 'storeOrUpdate']);
+    Route::delete('/cart/{id}', [CartController::class, 'removeFromCart']);
 
-    Route::post('/orders', [OrderController::class, 'store']); // Membuat pesanan
-    Route::get('/invoices', [InvoiceController::class, 'index']); // Menampilkan semua invoice
-    Route::get('/invoices/{id}', [InvoiceController::class, 'show']); // Menampilkan invoice tertentu
+    // Order Routes
+    Route::get('/order', [OrderController::class, 'index']);
+    Route::post('/order', [OrderController::class, 'store']);
 
-    Route::post('/orders/{id}', [OrderController::class, 'store']); // Untuk customer membuat order
+    // Invoice Routes
+    Route::get('/invoice', [InvoiceController::class, 'index']);
+    Route::get('/invoice/{id}', [InvoiceController::class, 'show']);
 });

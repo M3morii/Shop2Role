@@ -4,65 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-dark.min.css" rel="stylesheet">
+
+    <!-- CDN Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- CDN jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="container mt-5">
-        <h2 class="mb-4 text-center">Register</h2>
-        <form id="registerForm" autocomplete="off">
-            <div class="form-group mb-3">
-                <label for="name">Name</label>
-                <input type="text" class="form-control" id="name" required>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3>Register</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="registerForm">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="name" autocomplete="off" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" autocomplete="off" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email address</label>
+                                <input type="email" class="form-control" id="email" autocomplete="off" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password_confirmation" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="password_confirmation" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Register</button>
+                        </form>
+                        <div id="errorMessage" class="alert alert-danger mt-3 d-none"></div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group mb-3">
-                <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" required>
-            </div>
-            <div class="form-group mb-3">
-                <label for="email">Email</label>
-                <input type="email" class="form-control" id="email" required>
-            </div>
-            <div class="form-group mb-3">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" required>
-            </div>
-            <div class="form-group mb-3">
-                <label for="password_confirmation">Confirm Password</label>
-                <input type="password" class="form-control" id="password_confirmation" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Register</button>
-            <button type="button" class="btn btn-secondary w-100 mt-2" id="toLoginBtn">Login</button>
-        </form>
-        <div id="registerMessage" class="mt-3"></div>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <script>
-        $('#registerForm').on('submit', function(e) {
-            e.preventDefault();
-            $.ajax({
-                url: 'api/register', // Endpoint API register
-                method: 'POST',
-                data: {
-                    name: $('#name').val(),
-                    username: $('#username').val(),
-                    email: $('#email').val(),
-                    password: $('#password').val(),
-                    password_confirmation: $('#password_confirmation').val(),
-                },
-                success: function(response) {
-                    $('#registerMessage').text('Register berhasil! Silakan login.');
-                },
-                error: function(xhr) {
-                    $('#registerMessage').text(xhr.responseJSON.message);
-                }
-            });
-        });
+        $(document).ready(function() {
+            $('#registerForm').submit(function(event) {
+                event.preventDefault();
 
-        $('#toLoginBtn').click(function() {
-            window.location.href = '/login'; // Redirect ke halaman login
+                var password = $('#password').val();
+                var password_confirmation = $('#password_confirmation').val();
+
+                if (password !== password_confirmation) {
+                    $('#errorMessage').text('Password dan konfirmasi password tidak cocok').removeClass('d-none');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/register',
+                    type: 'POST',
+                    data: {
+                        name: $('#name').val(),
+                        username: $('#username').val(),
+                        email: $('#email').val(),
+                        password: password,
+                        password_confirmation: password_confirmation,
+                    },
+                    success: function(response) {
+                        // Tambahkan logika untuk menangani respons sukses
+                        console.log('Registrasi berhasil:', response);
+                        // Redirect ke halaman login atau tampilkan pesan sukses
+                    },
+                    error: function(xhr) {
+                        $('#errorMessage').text(xhr.responseJSON.message).removeClass('d-none');
+                    }
+                });
+            });
         });
     </script>
 </body>

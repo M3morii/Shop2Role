@@ -10,26 +10,23 @@ use Illuminate\Support\Facades\Validator;
 
 class ItemController extends Controller
 {
-    // Menampilkan semua item (list)
     public function index()
     {
         $items = Item::with(['files'])->get();
         return response()->json($items, 200);
     }
 
-    // Menampilkan detail item berdasarkan ID (show)
     public function show($id)
     {
         $item = Item::with(['files'])->find($id);
 
         if (!$item) {
-            return response()->json(['message' => 'Item not found'], 404);
+            return response()->json(['message' => 'Item tidak ditemukan'], 404);
         }
 
         return response()->json($item, 200);
     }
 
-    // Fungsi untuk menambah item
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -37,47 +34,35 @@ class ItemController extends Controller
             'description' => 'required|string',
             'sellprice' => 'required|numeric',
             'stock' => 'required|numeric',
-            'type' => 'required',
-            'quantity' => 'required',
-            'files' => 'nullable',
-            'files.*' => 'file|mimes:jpeg,png,jpg,gif,mp4|max:2048' // Atur sesuai dengan kebutuhan
+            'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4|max:2048'
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $item = Item::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'sellprice' => $request->sellprice,
-            'stock' => $request->stock,
-        ]);
+        $item = Item::create($request->only('name', 'description', 'sellprice', 'stock'));
 
         Stock::create([
             'item_id' => $item->id,
-            'type' => $request->type,
-            'quantity' => $request->quantity
+            'type' => 'in',
+            'quantity' => $request->stock
         ]);
 
-
-
-
-        // Menyimpan file jika ada
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $filePath = $file->store('uploads', 'public');
                 File::create([
                     'item_id' => $item->id,
                     'file_path' => $filePath,
+                    'file_type' => $file->getClientOriginalExtension(),
                 ]);
             }
         }
 
-        return response()->json(['message' => 'Item created successfully', 'item' => $item], 201);
+        return response()->json(['message' => 'Item berhasil dibuat', 'item' => $item], 201);
     }
 
-    // Fungsi untuk memperbarui item
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -94,13 +79,34 @@ class ItemController extends Controller
 
         $item = Item::find($id);
         if (!$item) {
-            return response()->json(['message' => 'Item not found'], 404);
+            return response()->json(['message' => 'Item tidak ditemukan'], 404);
         }
 
-        // Update item jika ada perubahan
         $item->update($request->only('name', 'description', 'sellprice'));
 
-        // Menyimpan file baru jika ada
+        $this->saveFiles($request, $item);
+
+        return response()->json(['message' => 'Item berhasil diperbarui', 'item' => $item], 200);
+    }
+
+    public function destroy($id)
+    {
+        $item = Item::find($id);
+        if (!$item) {
+            return response()->json(['message' => 'Item tidak ditemukan'], 404);
+        }
+
+        File::where('item_id', $item->id)->delete();
+
+        if ($item->delete()) {
+            return response()->json(['message' => 'Item berhasil dihapus'], 200);
+        }
+
+        return response()->json(['message' => 'Terjadi kesalahan saat menghapus item'], 500);
+    }
+
+    private function saveFiles(Request $request, Item $item)
+    {
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $filePath = $file->store('uploads', 'public');
@@ -111,26 +117,5 @@ class ItemController extends Controller
                 ]);
             }
         }
-
-        return response()->json(['message' => 'Item updated successfully', 'item' => $item], 200);
-    }
-
-    // Fungsi untuk menghapus item
-    public function destroy($id)
-    {
-        $item = Item::find($id);
-        if (!$item) {
-            return response()->json(['message' => 'Item not found'], 404);
-        }
-
-        // Hapus file yang terkait
-        File::where('item_id', $item->id)->delete();
-
-        // Hapus item
-        if ($item->delete()) {
-            return response()->json(['message' => 'Item deleted successfully'], 200);
-        }
-
-        return response()->json(['message' => 'Error deleting item'], 500);
     }
 }

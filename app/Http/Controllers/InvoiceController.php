@@ -16,8 +16,22 @@ class InvoiceController extends Controller
 
     public function index()
     {
-        // Menampilkan semua invoice
-        $invoices = Invoice::with('orders')->get();
+        $invoices = Invoice::with('orders.item')->get()->map(function ($invoice) {
+            return [
+                'id' => $invoice->id,
+                'total_price' => $invoice->total_price,
+                'purchase_date' => $invoice->purchase_date,
+                'status' => $invoice->status,
+                'orders' => $invoice->orders->map(function ($order) {
+                    return [
+                        'id' => $order->id,
+                        'item_name' => $order->item->name,
+                        'quantity' => $order->quantity,
+                        'price' => $order->price,
+                    ];
+                }),
+            ];
+        });
         return response()->json($invoices);
     }
 }

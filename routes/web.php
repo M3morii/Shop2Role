@@ -6,12 +6,12 @@ Route::get('/login', function () {
     return view('auth.login');
 });
 
-Route::get('/items', function () {
+Route::get('/Admin', function () {
     return view('admin.index');
 });
 
-Route::get('/customer', function () {
-    return view('customer.index');
+Route::get('/Customer', function () {
+    return view('customer.dashboard');
 });
 
 Route::get('/register', function () {

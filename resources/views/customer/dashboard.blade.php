@@ -244,12 +244,13 @@
                     success: function(response) {
                         let invoicesHtml = '';
                         response.forEach(invoice => {
-                            let statusClass = invoice.status === 'approved' ? 'text-success' : 'text-warning';
+                            let status = invoice.status || 'pending';
+                            let statusClass = status === 'approved' ? 'text-success' : 'text-warning';
                             invoicesHtml += `
                                 <div class="card mb-3">
                                     <div class="card-header">
                                         Invoice #${invoice.id} - Total: Rp${invoice.total_price} - Tanggal: ${invoice.purchase_date}
-                                        <span class="float-end ${statusClass}">Status: ${invoice.status}</span>
+                                        <span class="float-end ${statusClass}">Status: ${status}</span>
                                     </div>
                                     <ul class="list-group list-group-flush">
                             `;
@@ -277,57 +278,59 @@
             });
 
             // Menampilkan pesanan
-$('#viewOrders').click(function() {
-    $.ajax({
-        url: '/api/order',
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + getToken()
-        },
-        success: function(response) {
-            let ordersHtml = '';
-            let groupedOrders = {};
-            let orderNumber = 1; // Inisialisasi nomor urut order
+            $('#viewOrders').click(function() {
+                $.ajax({
+                    url: '/api/order',
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    success: function(response) {
+                        let ordersHtml = '';
+                        let groupedOrders = {};
+                        let orderNumber = 1; // Inisialisasi nomor urut order
 
-            // Mengelompokkan pesanan berdasarkan invoice_id
-            response.orders.forEach(order => {
-                if (order.status !== 'approved') {
-                    if (!groupedOrders[order.invoice_id]) {
-                        groupedOrders[order.invoice_id] = [];
+                        // Mengelompokkan pesanan berdasarkan invoice_id
+                        response.orders.forEach(order => {
+                            let status = order.status || 'pending';
+                            if (status !== 'approved') {
+                                if (!groupedOrders[order.invoice_id]) {
+                                    groupedOrders[order.invoice_id] = [];
+                                }
+                                groupedOrders[order.invoice_id].push(order);
+                            }
+                        });
+
+                        // Membuat HTML untuk setiap invoice
+                        Object.entries(groupedOrders).forEach(([invoiceId, orders]) => {
+                            if (orders.length > 0) {
+                                ordersHtml += `<h5>Order #${orderNumber}</h5><ul class="list-group mb-3">`; // Menggunakan orderNumber
+                                orders.forEach(order => {
+                                    let status = order.status || 'pending';
+                                    ordersHtml += `
+                                        <li class="list-group-item">
+                                            Pesanan #${order.id} - ${order.item.name} - Jumlah: ${order.quantity} - Harga: Rp${order.price} - Status: ${status}
+                                        </li>
+                                    `;
+                                });
+                                ordersHtml += '</ul>';
+                                orderNumber++; // Menambah nomor urut order
+                            }
+                        });
+
+                        if (ordersHtml === '') {
+                            ordersHtml = '<p>Tidak ada pesanan yang menunggu persetujuan.</p>';
+                        }
+                        $('#cartContent').html(ordersHtml);
+                        $('#cartModal .modal-title').text('Daftar Pesanan');
+                        $('#orderBtn').hide(); // Sembunyikan tombol Order
+                        $('#cartModal').modal('show');
+                    },
+                    error: function(xhr) {
+                        showMessage('Gagal memuat daftar pesanan.', 'danger');
                     }
-                    groupedOrders[order.invoice_id].push(order);
-                }
+                });
             });
-
-            // Membuat HTML untuk setiap invoice
-            Object.entries(groupedOrders).forEach(([invoiceId, orders]) => {
-                if (orders.length > 0) {
-                    ordersHtml += `<h5>Order #${orderNumber}</h5><ul class="list-group mb-3">`; // Menggunakan orderNumber
-                    orders.forEach(order => {
-                        ordersHtml += `
-                            <li class="list-group-item">
-                                Pesanan #${order.id} - ${order.item.name} - Jumlah: ${order.quantity} - Harga: Rp${order.price} - Status: ${order.status}
-                            </li>
-                        `;
-                    });
-                    ordersHtml += '</ul>';
-                    orderNumber++; // Menambah nomor urut order
-                }
-            });
-
-            if (ordersHtml === '') {
-                ordersHtml = '<p>Tidak ada pesanan yang menunggu persetujuan.</p>';
-            }
-            $('#cartContent').html(ordersHtml);
-            $('#cartModal .modal-title').text('Daftar Pesanan');
-            $('#orderBtn').hide(); // Sembunyikan tombol Order
-            $('#cartModal').modal('show');
-        },
-        error: function(xhr) {
-            showMessage('Gagal memuat daftar pesanan.', 'danger');
-        }
-    });
-});
 
             // Memuat daftar item saat halaman dimuat
             loadItems();

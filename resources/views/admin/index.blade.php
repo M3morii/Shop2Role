@@ -35,6 +35,7 @@
     <div class="container mt-5">
         <h2 class="text-center">Item List</h2>
         <button class="btn btn-success mb-3" id="addNewItem">Tambah Barang Baru</button>
+        <button class="btn btn-info mb-3" id="viewCustomerOrders">Lihat Pesanan Customer</button>
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
@@ -175,6 +176,23 @@
         </div>
     </div>
 
+    <!-- Modal Pesanan Customer -->
+    <div class="modal fade" id="customerOrdersModal" tabindex="-1" role="dialog" aria-labelledby="customerOrdersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerOrdersModalLabel">Pesanan Customer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="customerOrdersContent">
+                    <!-- Pesanan akan ditampilkan di sini -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     $(document).ready(function() {
         var token = sessionStorage.getItem('access_token');
@@ -250,19 +268,19 @@
                             var itemId = $(this).data('id');
                             $('#editStockItemId').val(itemId);
                             
-                            // Ambil data stok saat ini
+                            // Ambil data item termasuk stok
                             $.ajax({
-                                url: '/api/admin/stocks/' + itemId,
+                                url: '/api/admin/items/' + itemId,
                                 method: 'GET',
                                 headers: {
                                     'Authorization': 'Bearer ' + token
                                 },
-                                success: function(response) {
-                                    $('#currentStock').text(response.quantity);
+                                success: function(item) {
+                                    $('#currentStock').text(item.stock);
                                     $('#editStockModal').modal('show');
                                 },
                                 error: function() {
-                                    alert('Gagal mengambil data stok');
+                                    alert('Gagal mengambil data item');
                                 }
                             });
                         });
@@ -383,6 +401,132 @@
                 },
                 error: function(xhr) {
                     alert('Gagal menambahkan item baru: ' + xhr.responseJSON.message);
+                }
+            });
+        });
+
+        // Ganti fungsi loadCustomerOrders() dengan yang berikut:
+        function loadCustomerOrders() {
+            $.ajax({
+                url: '/api/admin/orders',
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    let ordersHtml = '';
+                    if (response.orders && response.orders.length > 0) {
+                        let groupedOrders = {};
+                        response.orders.forEach(function(order) {
+                            if (!groupedOrders[order.invoice_id]) {
+                                groupedOrders[order.invoice_id] = {
+                                    id: order.invoice_id,
+                                    status: order.status,
+                                    items: [],
+                                    total_price: 0
+                                };
+                            }
+                            let itemPrice = parseFloat(order.price);
+                            if (isNaN(itemPrice)) {
+                                itemPrice = 0;
+                            }
+                            groupedOrders[order.invoice_id].items.push({
+                                id: order.id,
+                                name: order.item.name,
+                                quantity: order.quantity,
+                                price: itemPrice
+                            });
+                            groupedOrders[order.invoice_id].total_price += itemPrice;
+                        });
+
+                        Object.values(groupedOrders).forEach(function(invoice) {
+                            let approveButton = `<button class="btn btn-success approve-order" data-id="${invoice.id}">Approve</button>`;
+                            let declineButton = `<button class="btn btn-danger decline-order" data-id="${invoice.id}">Decline</button>`;
+                            
+                            if (invoice.status === 'approved') {
+                                approveButton = `<button class="btn btn-success" disabled>Approved</button>`;
+                                declineButton = '';
+                            } else if (invoice.status === 'declined') {
+                                approveButton = '';
+                                declineButton = `<button class="btn btn-danger" disabled>Declined</button>`;
+                            }
+
+                            ordersHtml += `
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        Invoice #${invoice.id} - Status: ${invoice.status}
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Items:</h5>
+                                        <ul class="list-group">
+                    `;
+                            invoice.items.forEach(function(item) {
+                                ordersHtml += `
+                                    <li class="list-group-item">
+                                        ${item.name} - Jumlah: ${item.quantity} - Harga: Rp${item.price.toLocaleString('id-ID')}
+                                    </li>
+                                `;
+                            });
+                            ordersHtml += `
+                                        </ul>
+                                        <p class="mt-3">Total Harga: Rp${invoice.total_price.toLocaleString('id-ID')}</p>
+                                        ${approveButton}
+                                        ${declineButton}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        ordersHtml = '<p>Tidak ada pesanan saat ini.</p>';
+                    }
+                    $('#customerOrdersContent').html(ordersHtml);
+                },
+                error: function(xhr) {
+                    alert('Gagal memuat pesanan customer');
+                }
+            });
+        }
+
+        // Event listener untuk tombol Lihat Pesanan Customer
+        $('#viewCustomerOrders').click(function() {
+            loadCustomerOrders();
+            $('#customerOrdersModal').modal('show');
+        });
+
+        // Ganti event listener untuk tombol Approve
+        $(document).on('click', '.approve-order', function() {
+            var invoiceId = $(this).data('id');
+            $.ajax({
+                url: '/api/admin/orders/' + invoiceId + '/approve',
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    alert(response.message);
+                    loadCustomerOrders();
+                },
+                error: function(xhr) {
+                    alert('Gagal menyetujui pesanan: ' + xhr.responseJSON.message);
+                }
+            });
+        });
+
+        // Ganti event listener untuk tombol Decline
+        $(document).on('click', '.decline-order', function() {
+            var invoiceId = $(this).data('id');
+            $.ajax({
+                url: '/api/admin/orders/' + invoiceId + '/decline',
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    alert(response.message);
+                    loadCustomerOrders();
+                },
+                error: function(xhr) {
+                    alert('Gagal menolak pesanan: ' + xhr.responseJSON.message);
                 }
             });
         });

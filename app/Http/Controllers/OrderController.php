@@ -56,11 +56,12 @@ class OrderController extends Controller
         }
 
         if ($order->status === 'approved') {
-            return response()->json(['message' => 'Order sudah di-approve dan tidak bisa di-decline'], 400);
+            return response()->json(['message' => 'Order sudah disetujui sebelumnya'], 400);
         } elseif ($order->status === 'declined') {
-            return response()->json(['message' => 'Order sudah di-decline'], 400);
+            return response()->json(['message' => 'Order sudah ditolak dan tidak bisa disetujui'], 400);
         }
 
+        // Lanjutkan dengan proses persetujuan jika status masih 'pending'
         $order->status = 'approved';
         $order->save();
 
@@ -81,16 +82,23 @@ class OrderController extends Controller
 
     public function decline($id)
     {
-        $order = Order::where('user_id', $id)->with('item')->first();
+        $order = Order::find($id);
         if (!$order) {
-            return response()->json(['message' => 'Order Not Found']);
+            return response()->json(['message' => 'Order Not Found'], 404);
         }
-        
+
+        if ($order->status === 'approved') {
+            return response()->json(['message' => 'Order sudah disetujui dan tidak bisa ditolak'], 400);
+        } elseif ($order->status === 'declined') {
+            return response()->json(['message' => 'Order sudah ditolak sebelumnya'], 400);
+        }
+
+        // Lanjutkan dengan proses penolakan jika status masih 'pending'
         $order->status = 'declined';
         $order->save();
 
         $this->deleteRelatedInvoice($order->invoice_id);
-        return response()->json(['message' => 'Order declined successfully and invoice deleted']);
+        return response()->json(['message' => 'Order berhasil ditolak dan invoice dihapus']);
     }
 
     private function createInvoice()

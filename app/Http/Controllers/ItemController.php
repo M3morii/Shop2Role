@@ -10,9 +10,51 @@ use Illuminate\Support\Facades\Validator;
 
 class ItemController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = Item::with(['files'])->get();
+        $search = $request->input('search');
+        $sort = $request->input('sort', 'name');
+        $order = strtolower($request->input('order', 'asc'));
+        $perPage = $request->input('per_page', 10);
+
+        // Validasi order
+        if (!in_array($order, ['asc', 'desc'])) {
+            $order = 'asc';
+        }
+
+        $query = Item::with(['files']);
+        
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+        }
+        
+        // Validasi sort
+        if (in_array($sort, ['name', 'description', 'stock', 'sellprice'])) {
+            $query->orderBy($sort, $order);
+        } else {
+            $query->orderBy('name', 'asc');
+        }
+        
+        $items = $query->paginate($perPage);
+        
+        return response()->json($items);
+    }
+
+    // Metode baru untuk pencarian
+    public function search(Request $request)
+    {
+        $search = $request->input('search');
+        
+        $query = Item::with(['files']);
+        
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+        }
+        
+        $items = $query->get();
+        
         return response()->json($items, 200);
     }
 

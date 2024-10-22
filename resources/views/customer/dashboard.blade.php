@@ -6,18 +6,92 @@
     <title>Dashboard Customer</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Tambahkan link untuk Lightbox CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        .card {
+            transition: transform 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+        }
+        .badge-stock {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+        }
+        .price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .card {
+            max-width: 250px;
+            margin-bottom: 20px;
+        }
+        .card-img-top {
+            height: 150px;
+            object-fit: cover;
+        }
+        .card-body {
+            padding: 0.75rem;
+        }
+        .card-title {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .card-text {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        .price {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .badge-stock {
+            font-size: 0.75rem;
+        }
+        .input-group {
+            margin-top: 0.5rem;
+        }
+        .input-group .btn {
+            padding: 0.25rem 0.5rem;
+        }
+        .item-quantity {
+            width: 50px;
+            text-align: center;
+        }
+        .total-price {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        .add-to-cart {
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
         <h1 class="mb-4 text-center">Dashboard Customer</h1>
         
         <div class="row mb-4">
-            <div class="col">
+            <div class="col-md-6">
                 <button id="viewCart" class="btn btn-primary">Cek Keranjang</button>
                 <button id="viewInvoice" class="btn btn-info text-white">Cek Invoice</button>
                 <button id="viewOrders" class="btn btn-success">Cek Pesanan</button>
+                <button id="logoutBtn" class="btn btn-danger">Logout</button>
+            </div>
+            <div class="col-md-6">
+                <input type="text" id="searchInput" class="form-control" placeholder="Cari item...">
             </div>
         </div>
 
@@ -43,7 +117,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Tambahkan script untuk Lightbox -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
     <script>
         $(document).ready(function() {
@@ -52,52 +125,47 @@
                 return sessionStorage.getItem('access_token');
             }
 
-            // Fungsi untuk menampilkan pesan
             function showMessage(message, type = 'success') {
                 $('#messageContainer').html(`<div class="alert alert-${type}">${message}</div>`);
             }
 
-            // Mengambil dan menampilkan daftar item
-            function loadItems() {
+            function loadItems(search = '') {
+                let url = '/api/items';
+                if (search) {
+                    url += '/search?search=' + encodeURIComponent(search);
+                }
                 $.ajax({
-                    url: '/api/items',
+                    url: url,
                     method: 'GET',
                     headers: {
                         'Authorization': 'Bearer ' + getToken()
                     },
                     success: function(response) {
-                        const items = response;
+                        const items = Array.isArray(response) ? response : (response.data || []);
                         let itemsHtml = '';
                         items.forEach(item => {
-                            let filesList = '';
-                            if (item.files && item.files.length > 0) {
-                                filesList = '<div class="file-list">';
-                                item.files.forEach(file => {
-                                    const fileName = file.file_path.split('/').pop();
-                                    filesList += `<a href="/storage/${file.file_path}" data-lightbox="item-${item.id}" data-title="${item.name}">
-                                        <img src="/storage/${file.file_path}" alt="${fileName}" class="img-thumbnail" style="width: 50px; height: auto; margin-right: 5px;">
-                                    </a>`;
-                                });
-                                filesList += '</div>';
-                            } else {
-                                filesList = 'Tidak ada gambar';
-                            }
+                            let imageSrc = item.files && item.files.length > 0 
+                                ? `/storage/${item.files[0].file_path}` 
+                                : 'https://via.placeholder.com/300x200.png?text=Tidak+ada+gambar';
                             
                             itemsHtml += `
                                 <div class="col-md-4 mb-4">
-                                    <div class="card">
+                                    <div class="card h-100">
+                                        <img src="${imageSrc}" class="card-img-top" alt="${item.name}">
                                         <div class="card-body">
                                             <h5 class="card-title">${item.name}</h5>
-                                            <p class="card-text">Description: ${item.description}</p>
-                                            <p class="card-text">Harga: Rp${Number(item.sellprice).toLocaleString('id-ID')}</p>
-                                            <p class="card-text">Sisa Stok: ${item.stock}</p>
-                                            ${filesList}
-                                            <div class="input-group mt-2">
+                                            <p class="card-text text-muted">${item.description}</p>
+                                            <p class="price">Rp${Number(item.sellprice).toLocaleString('id-ID')}</p>
+                                            <span class="badge bg-info badge-stock">Stok: ${item.stock}</span>
+                                            <div class="input-group mt-3">
                                                 <button class="btn btn-outline-secondary decrease-quantity" type="button" data-id="${item.id}">-</button>
-                                                <input type="number" class="form-control item-quantity" value="0" min="0" max="${item.remaining_stock}" data-id="${item.id}">
+                                                <input type="number" class="form-control item-quantity" value="0" min="0" max="${item.stock}" data-id="${item.id}" data-price="${item.sellprice}">
                                                 <button class="btn btn-outline-secondary increase-quantity" type="button" data-id="${item.id}">+</button>
                                             </div>
-                                            <button class="btn btn-primary add-to-cart mt-2" data-id="${item.id}">Tambah ke Keranjang</button>
+                                            <p class="mt-2 total-price" data-id="${item.id}">Total: Rp0</p>
+                                            <button class="btn btn-primary w-100 mt-3 add-to-cart" data-id="${item.id}">
+                                                <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -115,10 +183,13 @@
                 });
             }
 
-            // Tambahkan event listener untuk tombol + dan -
             $(document).on('click', '.increase-quantity', function() {
                 const input = $(this).siblings('input.item-quantity');
-                input.val(parseInt(input.val()) + 1);
+                const currentValue = parseInt(input.val());
+                const maxStock = parseInt(input.attr('max'));
+                if (currentValue < maxStock) {
+                    input.val(currentValue + 1);
+                }
             });
 
             $(document).on('click', '.decrease-quantity', function() {
@@ -129,7 +200,17 @@
                 }
             });
 
-            // Modifikasi fungsi untuk menambahkan item ke keranjang
+            $(document).on('input', '.item-quantity', function() {
+                const input = $(this);
+                const currentValue = parseInt(input.val());
+                const maxStock = parseInt(input.attr('max'));
+                if (currentValue > maxStock) {
+                    input.val(maxStock);
+                } else if (currentValue < 0 || isNaN(currentValue)) {
+                    input.val(0);
+                }
+            });
+
             $(document).on('click', '.add-to-cart', function() {
                 const itemId = $(this).data('id');
                 const quantity = $(this).closest('.card-body').find('.item-quantity').val();
@@ -147,11 +228,11 @@
                         },
                         success: function(response) {
                             showMessage(response.message);
-                            // Reset quantity input to 0 after adding to cart
                             $(`.item-quantity[data-id="${itemId}"]`).val(0);
+                            updateTotalPrice($(`.item-quantity[data-id="${itemId}"]`));
                         },
                         error: function(xhr) {
-                            showMessage(xhr.responseJSON.message, 'danger');
+                            showMessage(xhr.responseJSON.message || 'Terjadi kesalahan saat menambahkan item ke keranjang.', 'danger');
                         }
                     });
                 } else {
@@ -159,81 +240,6 @@
                 }
             });
 
-            // Menampilkan keranjang
-            $('#viewCart').click(function() {
-                $.ajax({
-                    url: '/api/cart',
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + getToken()
-                    },
-                    success: function(response) {
-                        let cartHtml = '<ul class="list-group">';
-                        response.cart.forEach(item => {
-                            cartHtml += `
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    ${item.item.name} - Rp${item.item.sellprice} x ${item.quantity}
-                                    <button class="btn btn-danger btn-sm remove-from-cart" data-id="${item.id}">Hapus</button>
-                                </li>
-                            `;
-                        });
-                        cartHtml += '</ul>';
-                        $('#cartContent').html(cartHtml);
-                        $('#orderBtn').show(); // Tampilkan tombol Order untuk keranjang
-                        $('#cartModal').modal('show');
-                    },
-                    error: function(xhr) {
-                        showMessage('Gagal memuat keranjang.', 'danger');
-                    }
-                });
-            });
-
-            // Menghapus item dari keranjang
-            $(document).on('click', '.remove-from-cart', function() {
-                const cartId = $(this).data('id');
-                $.ajax({
-                    url: `/api/cart/${cartId}`,
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer ' + getToken()
-                    },
-                    data: { quantity: 1 },
-                    success: function(response) {
-                        showMessage(response.message);
-                        $('#viewCart').click();
-                    },
-                    error: function(xhr) {
-                        showMessage(xhr.responseJSON.message, 'danger');
-                    }
-                });
-            });
-
-            // Order (sebelumnya Checkout)
-            $('#orderBtn').click(function() {
-                const cartIds = $('.remove-from-cart').map(function() {
-                    return $(this).data('id');
-                }).get();
-
-                $.ajax({
-                    url: '/api/order',
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + getToken()
-                    },
-                    data: { cart_id: cartIds },
-                    success: function(response) {
-                        showMessage(response.message);
-                        $('#cartModal').modal('hide');
-                        // Refresh keranjang setelah order berhasil
-                        $('#viewCart').click();
-                    },
-                    error: function(xhr) {
-                        showMessage(xhr.responseJSON.message || 'Terjadi kesalahan saat membuat order.', 'danger');
-                    }
-                });
-            });
-
-            // Menampilkan invoice
             $('#viewInvoice').click(function() {
                 $.ajax({
                     url: '/api/invoice',
@@ -277,7 +283,6 @@
                 });
             });
 
-            // Menampilkan pesanan
             $('#viewOrders').click(function() {
                 $.ajax({
                     url: '/api/order',
@@ -332,8 +337,181 @@
                 });
             });
 
-            // Memuat daftar item saat halaman dimuat
+            $('#logoutBtn').click(function() {
+                sessionStorage.removeItem('access_token');
+                window.location.href = '/login';
+            });
+
+            function performSearch() {
+                const searchTerm = $('#searchInput').val();
+                loadItems(searchTerm);
+            }
+
+            $('#searchInput').on('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            // Fungsi untuk refresh otomatis
+            function autoRefresh() {
+                loadItems($('#searchInput').val());
+            }
+
+            // Set interval untuk refresh otomatis setiap 30 detik
+            setInterval(autoRefresh, 30000);
+
+            // Panggil loadItems saat halaman dimuat
             loadItems();
+
+            // Fungsi untuk mengupdate total harga
+            function updateTotalPrice(input) {
+                const quantity = parseInt(input.val());
+                const price = parseFloat(input.data('price'));
+                const totalPrice = quantity * price;
+                const formattedPrice = totalPrice.toLocaleString('id-ID');
+                input.closest('.card-body').find('.total-price').text(`Total: Rp${formattedPrice}`);
+            }
+
+            // Event handler untuk perubahan jumlah item
+            $(document).on('input', '.item-quantity', function() {
+                updateTotalPrice($(this));
+            });
+
+            $(document).on('click', '.increase-quantity, .decrease-quantity', function() {
+                const input = $(this).siblings('input.item-quantity');
+                updateTotalPrice(input);
+            });
+
+            // Tambahkan fungsi baru untuk menampilkan keranjang
+            $('#viewCart').click(function() {
+                $.ajax({
+                    url: '/api/cart',
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    success: function(response) {
+                        console.log('Response dari server:', response); // Untuk debugging
+
+                        let cartHtml = '<table class="table"><thead><tr><th>Item</th><th>Jumlah</th><th>Harga</th><th>Total</th></tr></thead><tbody>';
+                        let totalCart = 0;
+
+                        if (Array.isArray(response) && response.length > 0) {
+                            response.forEach(item => {
+                                const itemTotal = item.quantity * item.price;
+                                totalCart += itemTotal;
+                                cartHtml += `
+                                    <tr>
+                                        <td>${item.item_name}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>Rp${Number(item.price).toLocaleString('id-ID')}</td>
+                                        <td>Rp${Number(itemTotal).toLocaleString('id-ID')}</td>
+                                    </tr>
+                                `;
+                            });
+                            cartHtml += `</tbody><tfoot><tr><td colspan="3" class="text-end"><strong>Total Keranjang:</strong></td><td><strong>Rp${Number(totalCart).toLocaleString('id-ID')}</strong></td></tr></tfoot></table>`;
+                        } else {
+                            cartHtml = '<p>Keranjang belanja Anda kosong.</p>';
+                        }
+                        
+                        $('#cartContent').html(cartHtml);
+                        $('#cartModal .modal-title').text('Keranjang Belanja');
+                        $('#orderBtn').toggle(totalCart > 0);
+                        $('#cartModal').modal('show');
+                    },
+                    error: function(xhr) {
+                        console.error('Error:', xhr);
+                        showMessage('Gagal memuat keranjang belanja.', 'danger');
+                    }
+                });
+            });
+
+            // Tambahkan fungsi untuk tombol Order
+            $('#orderBtn').click(function() {
+                $.ajax({
+                    url: '/api/order',
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    success: function(response) {
+                        showMessage('Pesanan berhasil dibuat!', 'success');
+                        $('#cartModal').modal('hide');
+                        loadItems(); // Refresh daftar item
+                    },
+                    error: function(xhr) {
+                        showMessage('Gagal membuat pesanan.', 'danger');
+                    }
+                });
+            });
+
+            function loadCart() {
+                $.ajax({
+                    url: '/api/cart',
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    success: function(response) {
+                        console.log('Response dari server:', response);
+
+                        let cartHtml = '<table class="table"><thead><tr><th>Item</th><th>Jumlah</th><th>Harga</th><th>Total</th><th>Aksi</th></tr></thead><tbody>';
+                        let totalCart = 0;
+
+                        if (Array.isArray(response) && response.length > 0) {
+                            response.forEach(item => {
+                                const itemTotal = item.quantity * item.price;
+                                totalCart += itemTotal;
+                                cartHtml += `
+                                    <tr>
+                                        <td>${item.item_name}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>Rp${Number(item.price).toLocaleString('id-ID')}</td>
+                                        <td>Rp${Number(itemTotal).toLocaleString('id-ID')}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm delete-cart-item" data-id="${item.id}">Hapus</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            });
+                            cartHtml += `</tbody><tfoot><tr><td colspan="3" class="text-end"><strong>Total Keranjang:</strong></td><td colspan="2"><strong>Rp${Number(totalCart).toLocaleString('id-ID')}</strong></td></tr></tfoot></table>`;
+                        } else {
+                            cartHtml = '<p>Keranjang belanja Anda kosong.</p>';
+                        }
+                        
+                        $('#cartContent').html(cartHtml);
+                        $('#cartModal .modal-title').text('Keranjang Belanja');
+                        $('#orderBtn').toggle(totalCart > 0);
+                        $('#cartModal').modal('show');
+                    },
+                    error: function(xhr) {
+                        console.error('Error:', xhr);
+                        showMessage('Gagal memuat keranjang belanja.', 'danger');
+                    }
+                });
+            }
+
+            $(document).on('click', '.delete-cart-item', function() {
+                const cartId = $(this).data('id');
+                
+                $.ajax({
+                    url: `/api/cart/${cartId}`,
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    success: function(response) {
+                        showMessage(response.message);
+                        loadCart();
+                    },
+                    error: function(xhr) {
+                        showMessage('Gagal menghapus item dari keranjang.', 'danger');
+                    }
+                });
+            });
+
+            $('#viewCart').click(loadCart);
         });
     </script>
 </body>

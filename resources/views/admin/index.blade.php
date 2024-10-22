@@ -7,14 +7,29 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #ffffff;
+            background-color: #f8f9fa;
             color: #000000;
+        }
+        .dashboard-card {
+            height: 200px;
+            overflow-y: auto;
+        }
+        .dashboard-card .card-body {
+            padding: 1rem;
+        }
+        .dashboard-card h5 {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 0.5rem;
+        }
+        .dashboard-card .list-group-item {
+            padding: 0.5rem 1rem;
         }
         .table {
-            background-color: #f8f9fa;
+            background-color: #ffffff;
         }
         .table th, .table td {
-            color: #000000;
+            vertical-align: middle;
         }
         .table thead th {
             background-color: #6c757d;
@@ -33,25 +48,77 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h2 class="text-center">Item List</h2>
-        <button class="btn btn-success mb-3" id="addNewItem">Tambah Barang Baru</button>
-        <button class="btn btn-info mb-3" id="viewCustomerOrders">Lihat Pesanan Customer</button>
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Stock</th>
-                    <th>Sell Price</th>
-                    <th>Files</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="itemTable">
-                <!-- Item rows will be added here -->
-            </tbody>
-        </table>
+        <div class="row mb-4">
+            <div class="col-md-10">
+                <h2 class="text-center">Dashboard Admin</h2>
+            </div>
+            <div class="col-md-2">
+                <button id="logoutButton" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+        <!-- Dashboard Ringkasan -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Penjualan</h5>
+                        <p class="card-text" id="totalSales">Memuat...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Stock Rendah</h5>
+                        <ul class="list-group list-group-flush" id="lowStockItems">
+                            <li class="list-group-item">Memuat...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Pesanan Terbaru</h5>
+                        <ul class="list-group list-group-flush" id="recentOrders">
+                            <li class="list-group-item">Memuat...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tombol dan pencarian yang sudah ada -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <button class="btn btn-success mr-2" id="addNewItem">Tambah Barang Baru</button>
+                <button class="btn btn-info" id="viewCustomerOrders">Lihat Pesanan Customer</button>
+            </div>
+            <div class="col-md-6">
+                <input type="text" id="searchInput" class="form-control" placeholder="Cari item...">
+            </div>
+        </div>
+
+        <!-- Tabel item yang sudah ada -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th data-sort="name">Name</th>
+                        <th data-sort="description">Description</th>
+                        <th data-sort="stock">Stock</th>
+                        <th data-sort="sellprice">Sell Price</th>
+                        <th>Files</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="itemTable">
+                    <!-- Item rows will be added here -->
+                </tbody>
+            </table>
+        </div>
+        <div id="pagination" class="mt-3"></div>
     </div>
 
     <!-- Modal Edit Stock -->
@@ -75,13 +142,13 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="stockType" id="stockTypeIn" value="in" checked>
                                 <label class="form-check-label" for="stockTypeIn">
-                                    In (Tambah Stok)
+                                    In (Tambah stock)
                                 </label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="stockType" id="stockTypeOut" value="out">
                                 <label class="form-check-label" for="stockTypeOut">
-                                    Out (Kurangi Stok)
+                                    Out (Kurangi stock)
                                 </label>
                             </div>
                         </div>
@@ -159,7 +226,7 @@
                             <input type="number" class="form-control" id="addItemSellPrice" name="sellprice" required>
                         </div>
                         <div class="form-group">
-                            <label for="addItemStock">Stok Awal:</label>
+                            <label for="addItemStock">stock Awal:</label>
                             <input type="number" class="form-control" id="addItemStock" name="stock" required>
                         </div>
                         <div class="form-group">
@@ -186,8 +253,19 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" id="customerOrdersContent">
-                    <!-- Pesanan akan ditampilkan di sini -->
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="orderStatusFilter">Filter by Status:</label>
+                        <select id="orderStatusFilter" class="form-control">
+                            <option value="all">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="declined">Declined</option>
+                        </select>
+                    </div>
+                    <div id="customerOrdersContent">
+                        <!-- Orders will be displayed here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -201,17 +279,43 @@
             return;
         }
 
-        function loadItems() {
+        let currentSort = '';
+        let currentOrder = 'asc';
+
+        $('th[data-sort]').click(function() {
+            const sort = $(this).data('sort');
+            if (sort === currentSort) {
+                currentOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = sort;
+                currentOrder = 'asc';
+            }
+            loadItems(1, $('#searchInput').val(), currentSort, currentOrder);
+        });
+
+        function loadItems(page = 1, search = '', sort = '', order = '') {
+            let data = { 
+                page: page,
+                search: search,
+                per_page: 10
+            };
+
+            if (sort && order) {
+                data.sort = sort;
+                data.order = order.toLowerCase(); // Pastikan order selalu lowercase
+            }
+
             $.ajax({
                 url: '/api/items',
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token
                 },
+                data: data,
                 success: function(response) {
-                    if (response && response.length > 0) {
+                    if (response.data && response.data.length > 0) {
                         let rows = '';
-                        $.each(response, function(index, item) {
+                        $.each(response.data, function(index, item) {
                             let filesList = '';
                             if (item.files && item.files.length > 0) {
                                 filesList = '<div class="file-list">';
@@ -225,7 +329,7 @@
                             }
                             rows += `
                                 <tr>
-                                    <td>${index + 1}</td>
+                                    <td>${(page - 1) * 10 + index + 1}</td>
                                     <td>${item.name}</td>
                                     <td>${item.description}</td>
                                     <td>${item.stock}</td>
@@ -233,7 +337,7 @@
                                     <td>${filesList}</td>
                                     <td>
                                         <button class="btn btn-sm btn-primary edit-item" data-id="${item.id}">Edit Item</button>
-                                        <button class="btn btn-sm btn-info edit-stock" data-id="${item.id}">Edit Stok</button>
+                                        <button class="btn btn-sm btn-info edit-stock" data-id="${item.id}">Edit Stock</button>
                                         <button class="btn btn-sm btn-danger delete-item" data-id="${item.id}">Hapus</button>
                                     </td>
                                 </tr>
@@ -268,7 +372,7 @@
                             var itemId = $(this).data('id');
                             $('#editStockItemId').val(itemId);
                             
-                            // Ambil data item termasuk stok
+                            // Ambil data item termasuk Stock
                             $.ajax({
                                 url: '/api/admin/items/' + itemId,
                                 method: 'GET',
@@ -307,15 +411,31 @@
                     } else {
                         $('#itemTable').html('<tr><td colspan="7" class="text-center">Tidak ada item ditemukan</td></tr>');
                     }
+
+                    // Tambahkan tombol pagination
+                    let paginationHtml = '';
+                    if (response.last_page > 1) {
+                        paginationHtml += `<nav><ul class="pagination">`;
+                        for (let i = 1; i <= response.last_page; i++) {
+                            paginationHtml += `<li class="page-item ${i === response.current_page ? 'active' : ''}">
+                                <a class="page-link" href="#" data-page="${i}">${i}</a>
+                            </li>`;
+                        }
+                        paginationHtml += `</ul></nav>`;
+                    }
+                    $('#pagination').html(paginationHtml);
+
+                    // Tambahkan log untuk debugging
+                    console.log('Pagination info:', {
+                        currentPage: response.current_page,
+                        lastPage: response.last_page,
+                        total: response.total,
+                        perPage: response.per_page
+                    });
                 },
                 error: function(xhr, status, error) {
-                    if (xhr.status === 401) {
-                        alert('Sesi Anda telah berakhir. Silakan login kembali.');
-                        sessionStorage.removeItem('access_token');
-                        window.location.href = '/login';
-                    } else {
-                        $('#itemTable').html('<tr><td colspan="7" class="text-center">Error mengambil data</td></tr>');
-                    }
+                    console.error('Error:', xhr.responseText);
+                    $('#itemTable').html('<tr><td colspan="7" class="text-center">Error mengambil data: ' + xhr.responseText + '</td></tr>');
                 }
             });
         }
@@ -340,12 +460,12 @@
                     type: type
                 },
                 success: function(response) {
-                    alert('Stok berhasil diperbarui');
+                    alert('stock berhasil diperbarui');
                     $('#editStockModal').modal('hide');
                     loadItems();
                 },
                 error: function(xhr) {
-                    alert('Gagal memperbarui stok: ' + xhr.responseJSON.message);
+                    alert('Gagal memperbarui stock: ' + xhr.responseJSON.message);
                 }
             });
         });
@@ -406,13 +526,14 @@
         });
 
         // Ganti fungsi loadCustomerOrders() dengan yang berikut:
-        function loadCustomerOrders() {
+        function loadCustomerOrders(status = 'all') {
             $.ajax({
                 url: '/api/admin/orders',
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token
                 },
+                data: { status: status },
                 success: function(response) {
                     let ordersHtml = '';
                     if (response.orders && response.orders.length > 0) {
@@ -436,49 +557,55 @@
                                 quantity: order.quantity,
                                 price: itemPrice
                             });
-                            groupedOrders[order.invoice_id].total_price += itemPrice;
+                            groupedOrders[order.invoice_id].total_price += itemPrice * order.quantity;
                         });
 
                         Object.values(groupedOrders).forEach(function(invoice) {
-                            let approveButton = `<button class="btn btn-success approve-order" data-id="${invoice.id}">Approve</button>`;
-                            let declineButton = `<button class="btn btn-danger decline-order" data-id="${invoice.id}">Decline</button>`;
-                            
-                            if (invoice.status === 'approved') {
-                                approveButton = `<button class="btn btn-success" disabled>Approved</button>`;
-                                declineButton = '';
-                            } else if (invoice.status === 'declined') {
-                                approveButton = '';
-                                declineButton = `<button class="btn btn-danger" disabled>Declined</button>`;
-                            }
+                            // Hanya tampilkan pesanan yang sesuai dengan filter status
+                            if (status === 'all' || invoice.status === status) {
+                                let approveButton = `<button class="btn btn-success approve-order" data-id="${invoice.id}">Approve</button>`;
+                                let declineButton = `<button class="btn btn-danger decline-order" data-id="${invoice.id}">Decline</button>`;
+                                
+                                if (invoice.status === 'approved') {
+                                    approveButton = `<button class="btn btn-success" disabled>Approved</button>`;
+                                    declineButton = '';
+                                } else if (invoice.status === 'declined') {
+                                    approveButton = '';
+                                    declineButton = `<button class="btn btn-danger" disabled>Declined</button>`;
+                                }
 
-                            ordersHtml += `
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        Invoice #${invoice.id} - Status: ${invoice.status}
-                                    </div>
-                                    <div class="card-body">
-                                        <h5 class="card-title">Items:</h5>
-                                        <ul class="list-group">
-                    `;
-                            invoice.items.forEach(function(item) {
                                 ordersHtml += `
-                                    <li class="list-group-item">
-                                        ${item.name} - Jumlah: ${item.quantity} - Harga: Rp${item.price.toLocaleString('id-ID')}
-                                    </li>
-                                `;
-                            });
-                            ordersHtml += `
-                                        </ul>
-                                        <p class="mt-3">Total Harga: Rp${invoice.total_price.toLocaleString('id-ID')}</p>
-                                        ${approveButton}
-                                        ${declineButton}
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            Invoice #${invoice.id} - Status: ${invoice.status}
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">Items:</h5>
+                                            <ul class="list-group">
+                    `;
+                                invoice.items.forEach(function(item) {
+                                    ordersHtml += `
+                                        <li class="list-group-item">
+                                            ${item.name} - Jumlah: ${item.quantity} - Harga: Rp${item.price.toLocaleString('id-ID')}
+                                        </li>
+                                    `;
+                                });
+                                ordersHtml += `
+                                            </ul>
+                                            <p class="mt-3">Total Harga: Rp${invoice.total_price.toLocaleString('id-ID')}</p>
+                                            ${approveButton}
+                                            ${declineButton}
+                                        </div>
                                     </div>
-                                </div>
-                            `;
+                                `;
+                            }
                         });
-                    } else {
-                        ordersHtml = '<p>Tidak ada pesanan saat ini.</p>';
                     }
+                    
+                    if (ordersHtml === '') {
+                        ordersHtml = '<p>Tidak ada pesanan yang sesuai dengan filter saat ini.</p>';
+                    }
+                    
                     $('#customerOrdersContent').html(ordersHtml);
                 },
                 error: function(xhr) {
@@ -489,7 +616,8 @@
 
         // Event listener untuk tombol Lihat Pesanan Customer
         $('#viewCustomerOrders').click(function() {
-            loadCustomerOrders();
+            $('#orderStatusFilter').val('all'); // Reset filter ke 'all' setiap kali modal dibuka
+            loadCustomerOrders('all');
             $('#customerOrdersModal').modal('show');
         });
 
@@ -529,6 +657,63 @@
                     alert('Gagal menolak pesanan: ' + xhr.responseJSON.message);
                 }
             });
+        });
+
+        $('#searchInput').on('keyup', function() {
+            const searchTerm = $(this).val();
+            loadItems(1, searchTerm);
+        });
+
+        $(document).on('click', '.pagination a', function(e) {
+            e.preventDefault();
+            const page = $(this).data('page');
+            const search = $('#searchInput').val();
+            loadItems(page, search, currentSort, currentOrder);
+        });
+
+        // Fungsi untuk memuat dashboard ringkasan
+        function loadDashboardSummary() {
+            $.ajax({
+                url: '/api/admin/dashboard-summary',
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    // Update Total Penjualan
+                    $('#totalSales').text('Rp ' + response.totalSales.toLocaleString('id-ID'));
+
+                    // Update stock Rendah
+                    let lowStockHtml = '';
+                    response.lowStockItems.forEach(item => {
+                        lowStockHtml += `<li class="list-group-item">${item.name} (${item.stock})</li>`;
+                    });
+                    $('#lowStockItems').html(lowStockHtml);
+
+                    // Update Pesanan Terbaru
+                    let recentOrdersHtml = '';
+                    response.recentOrders.forEach(order => {
+                        recentOrdersHtml += `<li class="list-group-item">Order #${order.id} - ${order.status}</li>`;
+                    });
+                    $('#recentOrders').html(recentOrdersHtml);
+                },
+                error: function(xhr) {
+                    console.error('Error loading dashboard summary:', xhr.responseText);
+                }
+            });
+        }
+
+        // Panggil fungsi loadDashboardSummary saat halaman dimuat
+        loadDashboardSummary();
+
+        $('#logoutButton').click(function() {
+            sessionStorage.removeItem('access_token');
+            window.location.href = '/login';
+        });
+
+        // Ganti event listener untuk filter status
+        $('#orderStatusFilter').change(function() {
+            loadCustomerOrders($(this).val());
         });
     });
     </script>

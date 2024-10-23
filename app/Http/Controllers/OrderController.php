@@ -162,4 +162,29 @@ class OrderController extends Controller
     {
         Invoice::find($invoiceId)?->delete();
     }
+
+    public function orderHistory()
+    {
+        $user = auth()->user();
+        $orders = Order::with(['item', 'invoice'])
+                       ->whereHas('invoice', function($query) use ($user) {
+                           $query->where('user_id', $user->id);
+                       })
+                       ->orderBy('created_at', 'desc')
+                       ->get();
+
+        $formattedOrders = $orders->map(function ($order) {
+            return [
+                'id' => $order->id,
+                'invoice_id' => $order->invoice_id,
+                'item_name' => $order->item->name,
+                'quantity' => $order->quantity,
+                'price' => $order->price,
+                'status' => $order->invoice->status,
+                'date' => $order->created_at->format('Y-m-d H:i:s'),
+            ];
+        });
+
+        return response()->json(['order_history' => $formattedOrders], 200);
+    }
 }

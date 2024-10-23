@@ -13,8 +13,8 @@ Route::get('/Admin', function () {
 Route::get('/Customer', function () {
     return view('customer.index');
 });
-
 Route::get('/register', function () {
     return view('auth.register');
 });
+
 

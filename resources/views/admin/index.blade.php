@@ -50,51 +50,22 @@
     <div class="container mt-5">
         <div class="row mb-4">
             <div class="col-md-10">
-                <h2 class="text-center">Dashboard Admin</h2>
+                <h2 class="text-center">Item List</h2>
             </div>
             <div class="col-md-2">
                 <button id="logoutButton" class="btn btn-danger">Logout</button>
             </div>
         </div>
-        <!-- Dashboard Ringkasan -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card dashboard-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Penjualan</h5>
-                        <p class="card-text" id="totalSales">Memuat...</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card dashboard-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Stock Rendah</h5>
-                        <ul class="list-group list-group-flush" id="lowStockItems">
-                            <li class="list-group-item">Memuat...</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card dashboard-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Pesanan Terbaru</h5>
-                        <ul class="list-group list-group-flush" id="recentOrders">
-                            <li class="list-group-item">Memuat...</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Dashboard Ringkasan dihapus -->
 
         <!-- Tombol dan pencarian yang sudah ada -->
         <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <button class="btn btn-success mr-2" id="addNewItem">Tambah Barang Baru</button>
-                <button class="btn btn-info" id="viewCustomerOrders">Lihat Pesanan Customer</button>
+                <button class="btn btn-info mr-2" id="viewCustomerOrders">Lihat Pesanan Customer</button>
+                <button class="btn btn-warning mr-2" id="viewPurchaseHistory">Lihat Riwayat Pembelian</button>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <input type="text" id="searchInput" class="form-control" placeholder="Cari item...">
             </div>
         </div>
@@ -243,7 +214,7 @@
         </div>
     </div>
 
-    <!-- Modal Pesanan Customer -->
+    <!-- Modal Pesanan Customer dan Riwayat Pembelian -->
     <div class="modal fade" id="customerOrdersModal" tabindex="-1" role="dialog" aria-labelledby="customerOrdersModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -254,7 +225,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
+                    <div id="orderStatusFilterContainer" class="form-group">
                         <label for="orderStatusFilter">Filter by Status:</label>
                         <select id="orderStatusFilter" class="form-control">
                             <option value="all">All</option>
@@ -282,17 +253,6 @@
         let currentSort = '';
         let currentOrder = 'asc';
 
-        $('th[data-sort]').click(function() {
-            const sort = $(this).data('sort');
-            if (sort === currentSort) {
-                currentOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSort = sort;
-                currentOrder = 'asc';
-            }
-            loadItems(1, $('#searchInput').val(), currentSort, currentOrder);
-        });
-
         function loadItems(page = 1, search = '', sort = '', order = '') {
             let data = { 
                 page: page,
@@ -302,7 +262,7 @@
 
             if (sort && order) {
                 data.sort = sort;
-                data.order = order.toLowerCase(); // Pastikan order selalu lowercase
+                data.order = order.toLowerCase();
             }
 
             $.ajax({
@@ -348,7 +308,6 @@
                         // Event listeners untuk tombol-tombol
                         $('.edit-item').click(function() {
                             var itemId = $(this).data('id');
-                            // Ambil data item dan isi form
                             $.ajax({
                                 url: '/api/admin/items/' + itemId,
                                 method: 'GET',
@@ -372,7 +331,6 @@
                             var itemId = $(this).data('id');
                             $('#editStockItemId').val(itemId);
                             
-                            // Ambil data item termasuk Stock
                             $.ajax({
                                 url: '/api/admin/items/' + itemId,
                                 method: 'GET',
@@ -425,7 +383,6 @@
                     }
                     $('#pagination').html(paginationHtml);
 
-                    // Tambahkan log untuk debugging
                     console.log('Pagination info:', {
                         currentPage: response.current_page,
                         lastPage: response.last_page,
@@ -440,92 +397,6 @@
             });
         }
 
-        loadItems();
-
-        // Handle edit stock
-        $('#saveStockChanges').click(function() {
-            var itemId = $('#editStockItemId').val();
-            var quantity = $('#stockQuantity').val();
-            var type = $('input[name="stockType"]:checked').val();
-
-            $.ajax({
-                url: '/api/admin/stocks',
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                },
-                data: {
-                    item_id: itemId,
-                    quantity: quantity,
-                    type: type
-                },
-                success: function(response) {
-                    alert('stock berhasil diperbarui');
-                    $('#editStockModal').modal('hide');
-                    loadItems();
-                },
-                error: function(xhr) {
-                    alert('Gagal memperbarui stock: ' + xhr.responseJSON.message);
-                }
-            });
-        });
-
-        // Handle edit item
-        $('#saveItemChanges').click(function() {
-            var itemId = $('#editItemId').val();
-            var itemData = {
-                name: $('#editItemName').val(),
-                description: $('#editItemDescription').val(),
-                sellprice: $('#editItemSellPrice').val().replace(/\D/g, '') // Hapus semua karakter non-digit
-            };
-            $.ajax({
-                url: '/api/admin/items/' + itemId,
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                },
-                data: itemData,
-                success: function(response) {
-                    alert('Item berhasil diperbarui');
-                    $('#editItemModal').modal('hide');
-                    loadItems();
-                },
-                error: function(xhr) {
-                    alert('Gagal memperbarui item');
-                }
-            });
-        });
-
-        // Tambahkan ini di dalam script yang sudah ada
-        $('#addNewItem').click(function() {
-            $('#addItemModal').modal('show');
-        });
-
-        $('#saveNewItem').click(function() {
-            var formData = new FormData($('#addItemForm')[0]);
-            
-            $.ajax({
-                url: '/api/admin/items',
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                },
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    alert('Item baru berhasil ditambahkan');
-                    $('#addItemModal').modal('hide');
-                    $('#addItemForm')[0].reset();
-                    loadItems();
-                },
-                error: function(xhr) {
-                    alert('Gagal menambahkan item baru: ' + xhr.responseJSON.message);
-                }
-            });
-        });
-
-        // Ganti fungsi loadCustomerOrders() dengan yang berikut:
         function loadCustomerOrders(status = 'all') {
             $.ajax({
                 url: '/api/admin/orders',
@@ -561,7 +432,6 @@
                         });
 
                         Object.values(groupedOrders).forEach(function(invoice) {
-                            // Hanya tampilkan pesanan yang sesuai dengan filter status
                             if (status === 'all' || invoice.status === status) {
                                 let approveButton = `<button class="btn btn-success approve-order" data-id="${invoice.id}">Approve</button>`;
                                 let declineButton = `<button class="btn btn-danger decline-order" data-id="${invoice.id}">Decline</button>`;
@@ -582,7 +452,7 @@
                                         <div class="card-body">
                                             <h5 class="card-title">Items:</h5>
                                             <ul class="list-group">
-                    `;
+                                `;
                                 invoice.items.forEach(function(item) {
                                     ordersHtml += `
                                         <li class="list-group-item">
@@ -614,14 +484,106 @@
             });
         }
 
-        // Event listener untuk tombol Lihat Pesanan Customer
+        // Event listeners
+        $('th[data-sort]').click(function() {
+            const sort = $(this).data('sort');
+            if (sort === currentSort) {
+                currentOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = sort;
+                currentOrder = 'asc';
+            }
+            loadItems(1, $('#searchInput').val(), currentSort, currentOrder);
+        });
+
+        $('#saveStockChanges').click(function() {
+            var itemId = $('#editStockItemId').val();
+            var quantity = $('#stockQuantity').val();
+            var type = $('input[name="stockType"]:checked').val();
+
+            $.ajax({
+                url: '/api/admin/stocks',
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                data: {
+                    item_id: itemId,
+                    quantity: quantity,
+                    type: type
+                },
+                success: function(response) {
+                    alert('stock berhasil diperbarui');
+                    $('#editStockModal').modal('hide');
+                    loadItems();
+                },
+                error: function(xhr) {
+                    alert('Gagal memperbarui stock: ' + xhr.responseJSON.message);
+                }
+            });
+        });
+
+        $('#saveItemChanges').click(function() {
+            var itemId = $('#editItemId').val();
+            var itemData = {
+                name: $('#editItemName').val(),
+                description: $('#editItemDescription').val(),
+                sellprice: $('#editItemSellPrice').val().replace(/\D/g, '')
+            };
+            $.ajax({
+                url: '/api/admin/items/' + itemId,
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                data: itemData,
+                success: function(response) {
+                    alert('Item berhasil diperbarui');
+                    $('#editItemModal').modal('hide');
+                    loadItems();
+                },
+                error: function(xhr) {
+                    alert('Gagal memperbarui item');
+                }
+            });
+        });
+
+        $('#addNewItem').click(function() {
+            $('#addItemModal').modal('show');
+        });
+
+        $('#saveNewItem').click(function() {
+            var formData = new FormData($('#addItemForm')[0]);
+            
+            $.ajax({
+                url: '/api/admin/items',
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    alert('Item baru berhasil ditambahkan');
+                    $('#addItemModal').modal('hide');
+                    $('#addItemForm')[0].reset();
+                    loadItems();
+                },
+                error: function(xhr) {
+                    alert('Gagal menambahkan item baru: ' + xhr.responseJSON.message);
+                }
+            });
+        });
+
         $('#viewCustomerOrders').click(function() {
-            $('#orderStatusFilter').val('all'); // Reset filter ke 'all' setiap kali modal dibuka
+            $('#orderStatusFilterContainer').show(); // Tampilkan filter status
+            $('#customerOrdersModalLabel').text('Pesanan Customer'); // Ubah judul modal
+            $('#orderStatusFilter').val('all');
             loadCustomerOrders('all');
             $('#customerOrdersModal').modal('show');
         });
 
-        // Ganti event listener untuk tombol Approve
         $(document).on('click', '.approve-order', function() {
             var invoiceId = $(this).data('id');
             $.ajax({
@@ -640,7 +602,6 @@
             });
         });
 
-        // Ganti event listener untuk tombol Decline
         $(document).on('click', '.decline-order', function() {
             var invoiceId = $(this).data('id');
             $.ajax({
@@ -671,50 +632,45 @@
             loadItems(page, search, currentSort, currentOrder);
         });
 
-        // Fungsi untuk memuat dashboard ringkasan
-        function loadDashboardSummary() {
-            $.ajax({
-                url: '/api/admin/dashboard-summary',
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                },
-                success: function(response) {
-                    // Update Total Penjualan
-                    $('#totalSales').text('Rp ' + response.totalSales.toLocaleString('id-ID'));
-
-                    // Update stock Rendah
-                    let lowStockHtml = '';
-                    response.lowStockItems.forEach(item => {
-                        lowStockHtml += `<li class="list-group-item">${item.name} (${item.stock})</li>`;
-                    });
-                    $('#lowStockItems').html(lowStockHtml);
-
-                    // Update Pesanan Terbaru
-                    let recentOrdersHtml = '';
-                    response.recentOrders.forEach(order => {
-                        recentOrdersHtml += `<li class="list-group-item">Order #${order.id} - ${order.status}</li>`;
-                    });
-                    $('#recentOrders').html(recentOrdersHtml);
-                },
-                error: function(xhr) {
-                    console.error('Error loading dashboard summary:', xhr.responseText);
-                }
-            });
-        }
-
-        // Panggil fungsi loadDashboardSummary saat halaman dimuat
-        loadDashboardSummary();
-
         $('#logoutButton').click(function() {
             sessionStorage.removeItem('access_token');
             window.location.href = '/login';
         });
 
-        // Ganti event listener untuk filter status
-        $('#orderStatusFilter').change(function() {
-            loadCustomerOrders($(this).val());
+        $('#viewPurchaseHistory').click(function() {
+            $('#orderStatusFilterContainer').hide(); // Sembunyikan filter status
+            $('#customerOrdersModalLabel').text('Riwayat Pembelian'); // Ubah judul modal
+            $.ajax({
+                url: '/api/admin/purchase-history',
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    let historyHtml = '<table class="table">';
+                    historyHtml += '<thead><tr><th>Item</th><th>Jumlah</th><th>Tipe</th><th>Tanggal</th></tr></thead><tbody>';
+                    
+                    response.purchase_history.forEach(function(item) {
+                        historyHtml += `<tr>
+                            <td>${item.item_name}</td>
+                            <td>${item.quantity}</td>
+                            <td>${item.type === 'in' ? 'Masuk' : 'Keluar'}</td>
+                            <td>${item.date}</td>
+                        </tr>`;
+                    });
+                    
+                    historyHtml += '</tbody></table>';
+                    $('#customerOrdersContent').html(historyHtml);
+                    $('#customerOrdersModal').modal('show');
+                },
+                error: function(xhr) {
+                    alert('Gagal memuat riwayat pembelian');
+                }
+            });
         });
+
+        // Initial load
+        loadItems();
     });
     </script>
 </body>

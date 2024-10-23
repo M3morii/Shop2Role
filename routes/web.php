@@ -11,7 +11,7 @@ Route::get('/Admin', function () {
 });
 
 Route::get('/Customer', function () {
-    return view('customer.dashboard');
+    return view('customer.index');
 });
 
 Route::get('/register', function () {

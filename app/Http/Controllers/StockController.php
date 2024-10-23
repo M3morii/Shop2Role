@@ -96,4 +96,23 @@ class StockController extends Controller
     return response()->json(['message' => 'Stok berhasil dikurangi', 'remaining_stock' => $stock->quantity]);
 }
 
+public function purchaseHistory()
+{
+    $stocks = Stock::with('item')
+                   ->orderBy('created_at', 'desc')
+                   ->get();
+
+    $formattedStocks = $stocks->map(function ($stock) {
+        return [
+            'id' => $stock->id,
+            'item_name' => $stock->item->name,
+            'quantity' => $stock->quantity,
+            'type' => $stock->type,
+            'date' => $stock->created_at->format('Y-m-d H:i:s'),
+        ];
+    });
+
+    return response()->json(['purchase_history' => $formattedStocks], 200);
+}
+
 }

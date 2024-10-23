@@ -30,9 +30,11 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'role:1']
     Route::delete('/items/{id}', [ItemController::class, 'destroy']);
 
     // Stock Routes
-    
     Route::post('/stocks', [StockController::class, 'updateStock']);
     Route::get('/stocks/{itemId}', [StockController::class, 'show']);
+    
+    // Rute baru untuk purchase history
+    Route::get('/purchase-history', [StockController::class, 'purchaseHistory']);
 
     // File Routes
     Route::post('/items/{itemId}/files', [FileController::class, 'store']);
@@ -66,4 +68,7 @@ Route::group(['middleware' => ['auth:sanctum', 'role:2']], function() {
     // Invoice Routes
     Route::get('/invoice', [InvoiceController::class, 'index']);
     Route::get('/invoice/{id}', [InvoiceController::class, 'show']);
+
+    // Rute baru untuk riwayat pesanan
+    Route::get('/order-history', [OrderController::class, 'orderHistory']);
 });

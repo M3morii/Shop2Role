@@ -8,6 +8,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\UserController;
 
 // Rute autentikasi
 Route::post('/register', [AuthController::class, 'register']);
@@ -51,6 +53,18 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'role:1']
 
     // Dashboard Summary
     Route::get('/dashboard-summary', [AdminDashboardController::class, 'getDashboardSummary']);
+
+    // Category Routes
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::put('/categories/{id}', [CategoryController::class, 'update']);
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
+    // User Management Routes
+    Route::get('/users', [UserController::class, 'index']);
+    Route::put('/users/{id}/change-role', [UserController::class, 'changeRole']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
 });
 
 // Customer routes
@@ -60,7 +74,7 @@ Route::group(['middleware' => ['auth:sanctum', 'role:2']], function() {
     Route::post('/cart', [CartController::class, 'storeOrUpdate']);
     Route::put('/cart/{id}', [CartController::class, 'updateQuantity']);
     Route::delete('/cart/{id}', [CartController::class, 'removeFromCart']);
-
+    
     // Order Routes
     Route::get('/order', [OrderController::class, 'index']);
     Route::post('/order', [OrderController::class, 'store']);
@@ -71,4 +85,6 @@ Route::group(['middleware' => ['auth:sanctum', 'role:2']], function() {
 
     // Rute baru untuk riwayat pesanan
     Route::get('/order-history', [OrderController::class, 'orderHistory']);
+
+    Route::post('/cart/delete-multiple', [CartController::class, 'deleteMultiple']);
 });

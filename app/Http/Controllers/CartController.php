@@ -76,26 +76,27 @@ class CartController extends Controller
         }
 
         $request->validate([
-            'quantity' => 'required|integer|min:1'
+            'quantity' => 'required|integer|min:1|max:' . $cartItem->quantity
         ]);
 
-        $newQuantity = $request->quantity;
-        $availableStock = $cartItem->item->stock;
+        $removeQuantity = $request->quantity;
+        $newQuantity = $cartItem->quantity - $removeQuantity;
 
-        if ($newQuantity > $availableStock) {
+        if ($newQuantity <= 0) {
+            $cartItem->delete();
             return response()->json([
-                'success' => false,
-                'message' => "Stok tidak mencukupi. Stok tersedia: {$availableStock}"
-            ], 400);
+                'success' => true,
+                'message' => "{$cartItem->item->name} berhasil dihapus dari keranjang"
+            ]);
+        } else {
+            $cartItem->quantity = $newQuantity;
+            $cartItem->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Jumlah {$cartItem->item->name} berhasil diupdate"
+            ]);
         }
-
-        $cartItem->quantity = $newQuantity;
-        $cartItem->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => "Jumlah {$cartItem->item->name} berhasil diupdate"
-        ]);
     }
 
     // Menghapus item dari keranjang
@@ -113,6 +114,26 @@ class CartController extends Controller
         return response()->json([
             'success' => true,
             'message' => "{$itemName} berhasil dihapus dari keranjang"
+        ]);
+    }
+
+    public function deleteMultiple(Request $request)
+    {
+        $request->validate([
+            'cart_ids' => 'required|array',
+            'cart_ids.*' => 'exists:carts,id'
+        ]);
+
+        $user = Auth::user();
+        $cartIds = $request->cart_ids;
+
+        $deletedCount = Cart::where('user_id', $user->id)
+            ->whereIn('id', $cartIds)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$deletedCount} item berhasil dihapus dari keranjang"
         ]);
     }
 }

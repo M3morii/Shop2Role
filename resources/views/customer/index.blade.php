@@ -27,6 +27,9 @@
 @endsection
 
 @section('scripts')
+    <!-- Tambahkan link ke library Sweet Alert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <script>
         $(document).ready(function() {
             function getToken() {
@@ -73,19 +76,25 @@
                                     <div class="card h-100">
                                         <img src="${imageSrc}" class="card-img-top" alt="${item.name}">
                                         <div class="card-body">
-                                            <h5 class="card-title">${item.name}</h5>
-                                            <p class="card-text text-muted">${item.description}</p>
-                                            <p class="price">Rp${Number(item.sellprice).toLocaleString('id-ID')}</p>
-                                            <span class="badge bg-info badge-stock">Stok: ${item.stock}</span>
-                                            <div class="input-group mt-3">
-                                                <button class="btn btn-outline-secondary decrease-quantity" type="button" data-id="${item.id}">-</button>
-                                                <input type="number" class="form-control item-quantity" value="0" min="0" max="${item.stock}" data-id="${item.id}" data-price="${item.sellprice}">
-                                                <button class="btn btn-outline-secondary increase-quantity" type="button" data-id="${item.id}">+</button>
+                                            <div class="card-content">
+                                                <h5 class="card-title">${item.name}</h5>
+                                                <p class="card-text text-muted">${item.description}</p>
+                                                <div class="price-stock-container">
+                                                    <p class="price">Rp${Number(item.sellprice).toLocaleString('id-ID')}</p>
+                                                    <span class="badge bg-info badge-stock">Stok: ${item.stock}</span>
+                                                </div>
                                             </div>
-                                            <p class="mt-2 total-price" data-id="${item.id}">Total: Rp0</p>
-                                            <button class="btn btn-primary w-100 mt-3 add-to-cart" data-id="${item.id}">
-                                                <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
-                                            </button>
+                                            <div class="card-actions">
+                                                <div class="input-group mt-3">
+                                                    <button class="btn btn-outline-secondary decrease-quantity" type="button" data-id="${item.id}">-</button>
+                                                    <input type="number" class="form-control item-quantity" value="0" min="0" max="${item.stock}" data-id="${item.id}" data-price="${item.sellprice}">
+                                                    <button class="btn btn-outline-secondary increase-quantity" type="button" data-id="${item.id}">+</button>
+                                                </div>
+                                                <p class="mt-2 total-price" data-id="${item.id}">Total: Rp0</p>
+                                                <button class="btn btn-primary w-100 mt-3 add-to-cart" data-id="${item.id}">
+                                                    <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -105,30 +114,43 @@
                         'Authorization': 'Bearer ' + getToken()
                     },
                     success: function(response) {
-                        let cartHtml = '<table class="table"><thead><tr><th>Item</th><th>Jumlah</th><th>Harga</th><th>Total</th><th>Aksi</th></tr></thead><tbody>';
+                        let cartHtml = '<div class="cart-container">';
                         let totalCart = 0;
 
                         if (Array.isArray(response) && response.length > 0) {
+                            cartHtml += '<div class="cart-items">';
                             response.forEach(item => {
                                 const itemTotal = item.quantity * item.price;
                                 totalCart += itemTotal;
                                 cartHtml += `
-                                    <tr>
-                                        <td>${item.item_name}</td>
-                                        <td>${item.quantity}</td>
-                                        <td>Rp${Number(item.price).toLocaleString('id-ID')}</td>
-                                        <td>Rp${Number(itemTotal).toLocaleString('id-ID')}</td>
-                                        <td>
-                                            <button class="btn btn-danger btn-sm delete-cart-item" data-id="${item.id}">Hapus</button>
-                                        </td>
-                                    </tr>
+                                    <div class="cart-item">
+                                        <div class="item-details">
+                                            <h5 class="item-name">${item.item_name}</h5>
+                                            <p class="item-price">Rp${Number(item.price).toLocaleString('id-ID')} x ${item.quantity}</p>
+                                        </div>
+                                        <div class="item-total">
+                                            <p>Rp${Number(itemTotal).toLocaleString('id-ID')}</p>
+                                            <button class="btn btn-danger btn-sm delete-cart-item" data-id="${item.id}">
+                                                <i class="bi bi-trash"></i> Hapus
+                                            </button>
+                                        </div>
+                                    </div>
                                 `;
                             });
-                            cartHtml += `</tbody><tfoot><tr><td colspan="3" class="text-end"><strong>Total Keranjang:</strong></td><td colspan="2"><strong>Rp${Number(totalCart).toLocaleString('id-ID')}</strong></td></tr></tfoot></table>`;
+                            cartHtml += '</div>';
+                            cartHtml += `
+                                <div class="cart-summary">
+                                    <div class="summary-row">
+                                        <span>Total Keranjang:</span>
+                                        <strong>Rp${Number(totalCart).toLocaleString('id-ID')}</strong>
+                                    </div>
+                                </div>
+                            `;
                         } else {
-                            cartHtml = '<p>Keranjang belanja Anda kosong.</p>';
+                            cartHtml += '<p class="empty-cart">Keranjang belanja Anda kosong.</p>';
                         }
                         
+                        cartHtml += '</div>';
                         $('#cartContent').html(cartHtml);
                         $('#cartModal .modal-title').text('Keranjang Belanja');
                         $('#orderBtn').toggle(totalCart > 0);
@@ -244,6 +266,15 @@
                 input.closest('.card-body').find('.total-price').text(`Total: Rp${formattedPrice}`);
             }
 
+            function showSweetAlert(message, type = 'success') {
+                Swal.fire({
+                    title: type.charAt(0).toUpperCase() + type.slice(1),
+                    text: message,
+                    icon: type,
+                    confirmButtonText: 'OK'
+                });
+            }
+
             function addToCart(itemId, quantity) {
                 $.ajax({
                     url: '/api/cart',
@@ -256,7 +287,7 @@
                         quantity: quantity
                     },
                     success: function(response) {
-                        showMessage(response.message);
+                        showSweetAlert(response.message, 'success');
                         $(`.item-quantity[data-id="${itemId}"]`).val(0);
                         updateTotalPrice($(`.item-quantity[data-id="${itemId}"]`));
                     },
@@ -272,7 +303,7 @@
                         'Authorization': 'Bearer ' + getToken()
                     },
                     success: function(response) {
-                        showMessage(response.message);
+                        showSweetAlert(response.message, 'success');
                         loadCart();
                     },
                     error: handleAjaxError
@@ -280,16 +311,123 @@
             }
 
             function createOrder() {
+                Swal.fire({
+                    title: 'Konfirmasi Pesanan',
+                    text: "Apakah Anda yakin ingin membuat pesanan?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Buat Pesanan!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Ambil semua ID keranjang yang ada
+                        let cartIds = [];
+                        $('.delete-cart-item').each(function() {
+                            cartIds.push($(this).data('id'));
+                        });
+
+                        if (cartIds.length === 0) {
+                            Swal.fire('Peringatan', 'Keranjang belanja Anda kosong.', 'warning');
+                            return;
+                        }
+
+                        $.ajax({
+                            url: '/api/order',
+                            method: 'POST',
+                            headers: {
+                                'Authorization': 'Bearer ' + getToken(),
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            data: JSON.stringify({ cart_id: cartIds }),
+                            success: function(response) {
+                                Swal.fire(
+                                    'Berhasil!',
+                                    'Pesanan berhasil dibuat!',
+                                    'success'
+                                ).then(() => {
+                                    $('#cartModal').modal('hide');
+                                    loadItems();
+                                    loadCart();
+                                });
+                            },
+                            error: function(xhr) {
+                                let errorMessage = 'Terjadi kesalahan saat membuat pesanan. Silakan coba lagi.';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+                                Swal.fire(
+                                    'Gagal!',
+                                    errorMessage,
+                                    'error'
+                                );
+                                handleAjaxError(xhr);
+                            }
+                        });
+                    }
+                });
+            }
+
+            function deleteSelectedItems() {
+                const selectedItems = $('.cart-item-checkbox:checked').map(function() {
+                    return $(this).data('id');
+                }).get();
+
+                if (selectedItems.length === 0) {
+                    showSweetAlert('Pilih item yang ingin dihapus terlebih dahulu.', 'warning');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Konfirmasi Hapus',
+                    text: `Anda yakin ingin menghapus ${selectedItems.length} item terpilih dari keranjang?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/api/cart/delete-multiple',
+                            method: 'POST',
+                            headers: {
+                                'Authorization': 'Bearer ' + getToken(),
+                                'Content-Type': 'application/json'
+                            },
+                            data: JSON.stringify({ cart_ids: selectedItems }),
+                            success: function(response) {
+                                showSweetAlert(response.message, 'success');
+                                loadCart();
+                            },
+                            error: handleAjaxError
+                        });
+                    }
+                });
+            }
+
+            function removeFromCart(cartId, quantity) {
+                const maxQuantity = parseInt($(`#remove-quantity-${cartId}`).attr('max'));
+                
+                if (quantity > maxQuantity) {
+                    showSweetAlert(`Jumlah yang dihapus tidak boleh lebih dari ${maxQuantity}`, 'error');
+                    return;
+                }
+
                 $.ajax({
-                    url: '/api/order',
-                    method: 'POST',
+                    url: `/api/cart/${cartId}`,
+                    method: 'PUT',
                     headers: {
-                        'Authorization': 'Bearer ' + getToken()
+                        'Authorization': 'Bearer ' + getToken(),
+                        'Content-Type': 'application/json'
                     },
+                    data: JSON.stringify({ quantity: quantity }),
                     success: function(response) {
-                        showMessage('Pesanan berhasil dibuat!', 'success');
-                        $('#cartModal').modal('hide');
-                        loadItems();
+                        showSweetAlert(response.message, 'success');
+                        loadCart();
                     },
                     error: handleAjaxError
                 });
@@ -308,7 +446,9 @@
                     loadItems($(this).val());
                 }
             });
-            $('#orderBtn').click(createOrder);
+            $('#orderBtn').click(function() {
+                createOrder();
+            });
 
             $(document).on('click', '.increase-quantity, .decrease-quantity', function() {
                 const input = $(this).siblings('input.item-quantity');
@@ -340,7 +480,7 @@
                 if (quantity > 0) {
                     addToCart(itemId, quantity);
                 } else {
-                    showMessage('Silakan pilih jumlah item yang akan ditambahkan ke keranjang.', 'warning');
+                    showSweetAlert('Silakan pilih jumlah item yang akan ditambahkan ke keranjang.', 'warning');
                 }
             });
 
@@ -361,3 +501,4 @@
         });
     </script>
 @endsection
+

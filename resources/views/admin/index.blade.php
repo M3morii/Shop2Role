@@ -3,8 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Item List</title>
+    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div id="app">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" id="manageItems">Kelola Item</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="manageOrders">Kelola Pesanan</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="manageCategories">Kelola Kategori</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="manageUsers">Kelola Pengguna</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="viewPurchaseHistory">Riwayat Pembelian</a>
+                </li>
+            </ul>
+            <button id="logoutButton" class="btn btn-outline-light">Logout</button>
+        </div>
+    </nav>
+
+        <div class="container mt-4">
+            <div id="content">
+                <!-- Content will be loaded here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Your JavaScript code to handle API calls and update the content
+    </script>
+</body>
+</html>
+
+    <script>
+        // Your JavaScript code to handle API calls and update the content
+    </script>
+</body>
+</html>
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -39,6 +91,12 @@
             background-color: #007bff;
             color: #ffffff;
         }
+        .navbar {
+            background-color: #343a40;
+        }
+        .navbar-brand, .nav-link {
+            color: #ffffff !important;
+        }
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -47,49 +105,11 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
+
     <div class="container mt-5">
-        <div class="row mb-4">
-            <div class="col-md-10">
-                <h2 class="text-center">Item List</h2>
-            </div>
-            <div class="col-md-2">
-                <button id="logoutButton" class="btn btn-danger">Logout</button>
-            </div>
+        <div id="mainContent">
+            <!-- Konten utama akan dimuat di sini -->
         </div>
-        <!-- Dashboard Ringkasan dihapus -->
-
-        <!-- Tombol dan pencarian yang sudah ada -->
-        <div class="row mb-3">
-            <div class="col-md-8">
-                <button class="btn btn-success mr-2" id="addNewItem">Tambah Barang Baru</button>
-                <button class="btn btn-info mr-2" id="viewCustomerOrders">Lihat Pesanan Customer</button>
-                <button class="btn btn-warning mr-2" id="viewPurchaseHistory">Lihat Riwayat Pembelian</button>
-            </div>
-            <div class="col-md-4">
-                <input type="text" id="searchInput" class="form-control" placeholder="Cari item...">
-            </div>
-        </div>
-
-        <!-- Tabel item yang sudah ada -->
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th data-sort="name">Name</th>
-                        <th data-sort="description">Description</th>
-                        <th data-sort="stock">Stock</th>
-                        <th data-sort="sellprice">Sell Price</th>
-                        <th>Files</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="itemTable">
-                    <!-- Item rows will be added here -->
-                </tbody>
-            </table>
-        </div>
-        <div id="pagination" class="mt-3"></div>
     </div>
 
     <!-- Modal Edit Stock -->
@@ -213,7 +233,6 @@
             </div>
         </div>
     </div>
-
     <!-- Modal Pesanan Customer dan Riwayat Pembelian -->
     <div class="modal fade" id="customerOrdersModal" tabindex="-1" role="dialog" aria-labelledby="customerOrdersModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
@@ -237,6 +256,104 @@
                     <div id="customerOrdersContent">
                         <!-- Orders will be displayed here -->
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Kategori -->
+    <div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="categoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="categoryModalLabel">Kelola Kategori</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="categoryForm">
+                        <input type="hidden" id="categoryId">
+                        <div class="form-group">
+                            <label for="categoryName">Nama Kategori:</label>
+                            <input type="text" class="form-control" id="categoryName" required>
+                        </div>
+                    </form>
+                    <table class="table mt-3">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoryList">
+                            <!-- Daftar kategori akan dimuat di sini -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="saveCategoryChanges">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pengguna -->
+    <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Kelola Pengguna</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Email</th>
+                                <th>Peran</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userList">
+                            <!-- Daftar pengguna akan dimuat di sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tambahkan modal edit user -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit Pengguna</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+                        <div class="form-group">
+                            <label for="editUserName">Nama:</label>
+                            <input type="text" class="form-control" id="editUserName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editUserEmail">Email:</label>
+                            <input type="email" class="form-control" id="editUserEmail" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="saveUserChanges">Simpan Perubahan</button>
                 </div>
             </div>
         </div>
@@ -395,6 +512,17 @@
                     $('#itemTable').html('<tr><td colspan="7" class="text-center">Error mengambil data: ' + xhr.responseText + '</td></tr>');
                 }
             });
+
+            console.log('Items loaded successfully');
+            console.log('Attaching click event to #addNewItem');
+            $('#addNewItem').click(function() {
+                try {
+                    console.log('Tombol Tambah Barang Baru diklik');
+                    $('#addItemModal').modal('show');
+                } catch (error) {
+                    console.error('Error showing modal:', error);
+                }
+            });
         }
 
         function loadCustomerOrders(status = 'all') {
@@ -404,7 +532,6 @@
                 headers: {
                     'Authorization': 'Bearer ' + token
                 },
-                data: { status: status },
                 success: function(response) {
                     let ordersHtml = '';
                     if (response.orders && response.orders.length > 0) {
@@ -549,6 +676,7 @@
         });
 
         $('#addNewItem').click(function() {
+        console.log('Tombol Tambah Barang Baru diklik');
             $('#addItemModal').modal('show');
         });
 
@@ -637,9 +765,7 @@
             window.location.href = '/login';
         });
 
-        $('#viewPurchaseHistory').click(function() {
-            $('#orderStatusFilterContainer').hide(); // Sembunyikan filter status
-            $('#customerOrdersModalLabel').text('Riwayat Pembelian'); // Ubah judul modal
+        function loadPurchaseHistory() {
             $.ajax({
                 url: '/api/admin/purchase-history',
                 method: 'GET',
@@ -647,7 +773,8 @@
                     'Authorization': 'Bearer ' + token
                 },
                 success: function(response) {
-                    let historyHtml = '<table class="table">';
+                    let historyHtml = '<h2 class="text-center mb-4">Riwayat Pembelian</h2>';
+                    historyHtml += '<table class="table">';
                     historyHtml += '<thead><tr><th>Item</th><th>Jumlah</th><th>Tipe</th><th>Tanggal</th></tr></thead><tbody>';
                     
                     response.purchase_history.forEach(function(item) {
@@ -660,17 +787,294 @@
                     });
                     
                     historyHtml += '</tbody></table>';
-                    $('#customerOrdersContent').html(historyHtml);
-                    $('#customerOrdersModal').modal('show');
+                    $('#mainContent').html(historyHtml);
                 },
                 error: function(xhr) {
                     alert('Gagal memuat riwayat pembelian');
                 }
             });
+        }
+
+        // Event listeners untuk menu navbar
+        $('#manageItems').click(function() {
+            loadItems();
+            $('#mainContent').html(`
+                <h2 class="text-center mb-4">Kelola Item</h2>
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <button class="btn btn-success mr-2" id="addNewItem">Tambah Barang Baru</button>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Cari item...">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th data-sort="name">Name</th>
+                                <th data-sort="description">Description</th>
+                                <th data-sort="stock">Stock</th>
+                                <th data-sort="sellprice">Sell Price</th>
+                                <th>Files</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemTable">
+                            <!-- Item rows will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="pagination" class="mt-3"></div>
+            `);
         });
 
-        // Initial load
-        loadItems();
+        $('#manageOrders').click(function() {
+            $('#orderStatusFilterContainer').show();
+            $('#customerOrdersModalLabel').text('Kelola Pesanan');
+            $('#orderStatusFilter').val('all');
+            loadCustomerOrders('all');
+            $('#customerOrdersModal').modal('show');
+        });
+
+        $('#manageCategories').click(function() {
+            loadCategories();
+            $('#categoryModal').modal('show');
+        });
+
+        $('#manageUsers').click(function() {
+            loadUsers();
+            $('#userModal').modal('show');
+        });
+
+        $('#viewPurchaseHistory').click(function() {
+            loadPurchaseHistory();
+        });
+
+        $('#orderStatusFilter').change(function() {
+            const selectedStatus = $(this).val();
+            loadCustomerOrders(selectedStatus);
+        });
+
+        function loadCategories() {
+            $.ajax({
+                url: '/api/admin/categories',
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    let categoriesHtml = '';
+                    response.categories.forEach(function(category) {
+                        categoriesHtml += `
+                            <tr>
+                                <td>${category.name}</td>
+                                <td>${category.item_count} item</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary edit-category" data-id="${category.id}">Edit</button>
+                                    <button class="btn btn-sm btn-danger delete-category" data-id="${category.id}">Hapus</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    $('#categoryList').html(categoriesHtml);
+                },
+                error: function(xhr) {
+                    alert('Gagal memuat kategori');
+                }
+            });
+        }
+
+        function loadUsers() {
+            $.ajax({
+                url: '/api/admin/users',
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    let usersHtml = '';
+                    response.users.forEach(function(user) {
+                        let roleText = user.role_id === 1 ? 'Admin' : 'Customer';
+                        let changeRoleText = user.role_id === 1 ? 'Jadikan Customer' : 'Jadikan Admin';
+                        usersHtml += `
+                            <tr>
+                                <td>${user.name}</td>
+                                <td>${user.email}</td>
+                                <td>${roleText}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary edit-user" data-id="${user.id}">Edit</button>
+                                    <button class="btn btn-sm btn-danger delete-user" data-id="${user.id}">Hapus</button>
+                                    <button class="btn btn-sm btn-info change-role" data-id="${user.id}" data-role-id="${user.role_id}">
+                                        ${changeRoleText}
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    $('#userList').html(usersHtml);
+                },
+                error: function(xhr) {
+                    alert('Gagal memuat pengguna');
+                }
+            });
+        }
+
+        $(document).on('click', '.edit-user', function() {
+            let userId = $(this).data('id');
+            $.ajax({
+                url: `/api/admin/users/${userId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    $('#editUserId').val(response.user.id);
+                    $('#editUserName').val(response.user.name);
+                    $('#editUserEmail').val(response.user.email);
+                    $('#editUserModal').modal('show');
+                },
+                error: function(xhr) {
+                    alert('Gagal mengambil data pengguna');
+                }
+            });
+        });
+
+        $('#saveUserChanges').click(function() {
+            let userId = $('#editUserId').val();
+            let userData = {
+                name: $('#editUserName').val(),
+                email: $('#editUserEmail').val(),
+                _method: 'PUT' // Tambahkan ini
+            };
+            $.ajax({
+                url: `/api/admin/users/${userId}`,
+                method: 'POST', // Ubah ini menjadi POST
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Tambahkan ini jika belum ada
+                },
+                data: userData,
+                success: function(response) {
+                    alert('Pengguna berhasil diperbarui');
+                    $('#editUserModal').modal('hide');
+                    loadUsers();
+                },
+                error: function(xhr) {
+                    alert('Gagal memperbarui pengguna: ' + xhr.responseJSON.message);
+                }
+            });
+        });
+
+        $(document).on('click', '.delete-user', function() {
+            if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
+                let userId = $(this).data('id');
+                $.ajax({
+                    url: `/api/admin/users/${userId}`,
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    success: function(response) {
+                        alert('Pengguna berhasil dihapus');
+                        loadUsers();
+                    },
+                    error: function(xhr) {
+                        alert('Gagal menghapus pengguna');
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '.change-role', function() {
+            let userId = $(this).data('id');
+            let currentRoleId = $(this).data('role-id');
+            let newRoleId = currentRoleId === 1 ? 2 : 1;
+            
+            $.ajax({
+                url: `/api/admin/users/${userId}/change-role`,
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                data: { role_id: newRoleId },
+                success: function(response) {
+                    alert('Peran pengguna berhasil diubah');
+                    loadUsers();
+                },
+                error: function(xhr) {
+                    alert('Gagal mengubah peran pengguna');
+                }
+            });
+        });
+
+        $('#saveCategoryChanges').click(function() {
+            let categoryId = $('#categoryId').val();
+            let categoryName = $('#categoryName').val();
+            let url = categoryId ? `/api/admin/categories/${categoryId}` : '/api/admin/categories';
+            let method = categoryId ? 'PUT' : 'POST';
+
+            $.ajax({
+                url: url,
+                method: method,
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                data: { name: categoryName },
+                success: function(response) {
+                    alert('Kategori berhasil disimpan');
+                    loadCategories();
+                    $('#categoryModal').modal('hide');
+                    $('#categoryId').val('');
+                    $('#categoryName').val('');
+                },
+                error: function(xhr) {
+                    alert('Gagal menyimpan kategori');
+                }
+            });
+        });
+
+        $(document).on('click', '.edit-category', function() {
+            let categoryId = $(this).data('id');
+            $.ajax({
+                url: `/api/admin/categories/${categoryId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    $('#categoryId').val(response.category.id);
+                    $('#categoryName').val(response.category.name);
+                },
+                error: function(xhr) {
+                    alert('Gagal mengambil data kategori');
+                }
+            });
+        });
+
+        $(document).on('click', '.delete-category', function() {
+            if (confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
+                let categoryId = $(this).data('id');
+                $.ajax({
+                    url: `/api/admin/categories/${categoryId}`,
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    success: function(response) {
+                        alert('Kategori berhasil dihapus');
+                        loadCategories();
+                    },
+                    error: function(xhr) {
+                        alert('Gagal menghapus kategori');
+                    }
+                });
+            }
+        });
+
+        // Inisialisasi halaman
+        $('#manageItems').click();
     });
     </script>
 </body>

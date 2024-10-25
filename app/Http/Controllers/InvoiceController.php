@@ -14,24 +14,28 @@ class InvoiceController extends Controller
         return response()->json($invoice);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $invoices = Invoice::with('orders.item')->get()->map(function ($invoice) {
-            return [
-                'id' => $invoice->id,
-                'total_price' => $invoice->total_price,
-                'purchase_date' => $invoice->purchase_date,
-                'status' => $invoice->status,
-                'orders' => $invoice->orders->map(function ($order) {
-                    return [
-                        'id' => $order->id,
-                        'item_name' => $order->item->name,
-                        'quantity' => $order->quantity,
-                        'price' => $order->price,
-                    ];
-                }),
-            ];
-        });
+        $invoices = Invoice::with('orders.item')
+            ->where('status', 'approved')
+            ->get()
+            ->map(function ($invoice) {
+                return [
+                    'id' => $invoice->id,
+                    'total_price' => $invoice->total_price,
+                    'purchase_date' => $invoice->purchase_date,
+                    'status' => $invoice->status,
+                    'orders' => $invoice->orders->map(function ($order) {
+                        return [
+                            'id' => $order->id,
+                            'item_name' => $order->item->name,
+                            'quantity' => $order->quantity,
+                            'price' => $order->price,
+                        ];
+                    }),
+                ];
+            });
+
         return response()->json($invoices);
     }
 }

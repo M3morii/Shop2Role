@@ -162,45 +162,50 @@
 
             function viewInvoice() {
                 $.ajax({
-                    url: '/api/invoice',
+                    url: '/api/invoice?status=approved',
                     method: 'GET',
                     headers: {
                         'Authorization': 'Bearer ' + getToken()
                     },
                     success: function(response) {
-                        let invoicesHtml = '';
-                        response.forEach(invoice => {
-                            let status = invoice.status || 'pending';
-                            let statusClass = status === 'approved' ? 'status-approved' : 'status-pending';
-                            invoicesHtml += `
-                                <div class="invoice-card">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <span>Invoice #${invoice.id}</span>
-                                        <span class="${statusClass}">Status: ${status}</span>
-                                    </div>
-                                    <div class="card-body">
-                                        <p class="mb-1">Tanggal: ${invoice.purchase_date}</p>
-                                        <ul class="list-group list-group-flush">
-                    `;
-                            invoice.orders.forEach(order => {
+                        let invoicesHtml = '<div class="invoice-container">';
+                        
+                        if (response.length > 0) {
+                            response.forEach(invoice => {
                                 invoicesHtml += `
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>${order.item_name} - Jumlah: ${order.quantity}</span>
-                                        <span>Rp${Number(order.price).toLocaleString('id-ID')}</span>
-                                    </li>
+                                    <div class="invoice-card mb-3">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <span>Invoice #${invoice.id}</span>
+                                            <span class="badge status-approved">Approved</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-1">Date: ${invoice.purchase_date}</p>
+                                            <ul class="list-group list-group-flush">
+                    `;
+                                invoice.orders.forEach(order => {
+                                    invoicesHtml += `
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>${order.item_name} - Quantity: ${order.quantity}</span>
+                                            <span>Rp${Number(order.price).toLocaleString('id-ID')}</span>
+                                        </li>
+                                    `;
+                                });
+                                invoicesHtml += `
+                                            </ul>
+                                        </div>
+                                        <div class="card-footer text-end">
+                                            <strong>Total: Rp${Number(invoice.total_price).toLocaleString('id-ID')}</strong>
+                                        </div>
+                                    </div>
                                 `;
                             });
-                            invoicesHtml += `
-                                        </ul>
-                                    </div>
-                                    <div class="card-footer text-end">
-                                        <strong>Total: Rp${Number(invoice.total_price).toLocaleString('id-ID')}</strong>
-                                    </div>
-                                </div>
-                            `;
-                        });
+                        } else {
+                            invoicesHtml += '<p>No approved invoices found.</p>';
+                        }
+                        
+                        invoicesHtml += '</div>';
                         $('#cartContent').html(invoicesHtml);
-                        $('#cartModal .modal-title').text('Daftar Invoice');
+                        $('#cartModal .modal-title').text('Approved Invoices');
                         $('#orderBtn').hide();
                         $('#cartModal').modal('show');
                     },

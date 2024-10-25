@@ -75,6 +75,23 @@
             font-weight: bold;
             margin-bottom: 0.5rem;
         }
+        .status-approved {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .filter-invoice {
+            margin-right: 5px;
+        }
+        .status-approved {
+        background-color: #28a745;
+        color: white;
+        }
     </style>
     @yield('styles')
 </head>

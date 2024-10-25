@@ -5,8 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
+    <!-- Modal Tambah Item Baru -->
+    <div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addItemModalLabel">Tambah Barang Baru</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addItemForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="name">Nama Barang</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Deskripsi</label>
+                            <textarea class="form-control" id="description" name="description" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="sellprice">Harga Jual</label>
+                            <input type="number" class="form-control" id="sellprice" name="sellprice" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="stock">Stok Awal</label>
+                            <input type="number" class="form-control" id="stock" name="stock" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="files">Gambar/Video</label>
+                            <input type="file" class="form-control-file" id="files" name="files[]" multiple>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="saveNewItem">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        console.log('Document ready');
+
+        var token = sessionStorage.getItem('access_token');
+        if (!token) {
+            console.log('No token found, redirecting to login');
+            window.location.href = '/login';
+            return;
+        }
+
+        // Cek apakah Bootstrap modal berfungsi
+        if (typeof $.fn.modal === 'undefined') {
+            console.error('Bootstrap modal tidak tersedia');
+        } else {
+            console.log('Bootstrap modal tersedia');
+        }
+
+        // Event listener untuk tombol "Tambah Barang Baru"
+        $(document).on('click', '#addNewItem', function(e) {
+            e.preventDefault();
+            console.log('Tombol Tambah Barang Baru diklik');
+            $('#addItemModal').modal('show');
+        });
+
+        // Event listener untuk tombol "Simpan" di dalam modal
+        $('#saveNewItem').click(function() {
+            console.log('Tombol Simpan diklik');
+            var formData = new FormData($('#addItemForm')[0]);
+            
+        });
+    });
+    </script>
+</body>
+</html>
+
     <div id="app">
     <nav class="navbar navbar-expand-lg navbar-dark">
         <a class="navbar-brand" href="#">Admin Dashboard</a>
@@ -42,9 +123,6 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         // Your JavaScript code to handle API calls and update the content
     </script>
@@ -192,47 +270,47 @@
         </div>
     </div>
 
-    <!-- Modal Tambah Item Baru -->
-    <div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addItemModalLabel">Tambah Barang Baru</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="addItemForm" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label for="addItemName">Nama:</label>
-                            <input type="text" class="form-control" id="addItemName" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="addItemDescription">Deskripsi:</label>
-                            <textarea class="form-control" id="addItemDescription" name="description" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="addItemSellPrice">Harga Jual:</label>
-                            <input type="number" class="form-control" id="addItemSellPrice" name="sellprice" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="addItemStock">stock Awal:</label>
-                            <input type="number" class="form-control" id="addItemStock" name="stock" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="addItemFiles">File (Gambar/Video):</label>
-                            <input type="file" class="form-control-file" id="addItemFiles" name="files[]" multiple>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary" id="saveNewItem">Simpan</button>
-                </div>
+<!-- Modal Tambah Item Baru -->
+<div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addItemModalLabel">Tambah Barang Baru</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addItemForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="addItemName">Nama:</label>
+                        <input type="text" class="form-control" id="addItemName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addItemDescription">Deskripsi:</label>
+                        <textarea class="form-control" id="addItemDescription" name="description" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="addItemSellPrice">Harga Jual:</label>
+                        <input type="number" class="form-control" id="addItemSellPrice" name="sellprice" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addItemStock">Stock Awal:</label>
+                        <input type="number" class="form-control" id="addItemStock" name="stock" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addItemFiles">File (Gambar/Video):</label>
+                        <input type="file" class="form-control-file" id="addItemFiles" name="files[]" multiple>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-primary" id="saveNewItem">Simpan</button>
             </div>
         </div>
     </div>
+</div>
     <!-- Modal Pesanan Customer dan Riwayat Pembelian -->
     <div class="modal fade" id="customerOrdersModal" tabindex="-1" role="dialog" aria-labelledby="customerOrdersModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">

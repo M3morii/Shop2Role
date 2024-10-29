@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Item extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description', 'sellprice', 'stock'];
+    protected $fillable = ['name', 'description', 'sellprice', 'stock', 'category_id'];
 
     public function stocks()
     {

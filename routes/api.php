@@ -26,6 +26,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'role:1']
 ], function() {
     // Item Routes
+    Route::get('/items', [ItemController::class, 'index']);
     Route::get('/items/{id}', [ItemController::class, 'show']);
     Route::post('/items', [ItemController::class, 'store']);
     Route::post('/items/{id}', [ItemController::class, 'update']);
@@ -56,6 +57,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'role:1']
 
     // Category Routes
     Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/categories/{id}', [CategoryController::class, 'show']);
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::put('/categories/{id}', [CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);

@@ -4,55 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Modal Tambah Item Baru -->
-    <div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addItemModalLabel">Tambah Barang Baru</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="addItemForm" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label for="name">Nama Barang</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="description">Deskripsi</label>
-                            <textarea class="form-control" id="description" name="description" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="sellprice">Harga Jual</label>
-                            <input type="number" class="form-control" id="sellprice" name="sellprice" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="stock">Stok Awal</label>
-                            <input type="number" class="form-control" id="stock" name="stock" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="files">Gambar/Video</label>
-                            <input type="file" class="form-control-file" id="files" name="files[]" multiple>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary" id="saveNewItem">Simpan</button>
-                </div>
-            </div>
+    <div id="app">
+        @include('admin.partials.navbar')
+        
+        <div class="container mt-4">
+            <div id="mainContent"></div>
+            @include('admin.modals.item-modals')
+            @include('admin.modals.order-modals')
+            @include('admin.modals.category-modals')
+            @include('admin.modals.user-modals')
         </div>
     </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <script>
+</body>
+<script>
     $(document).ready(function() {
         console.log('Document ready');
 
@@ -63,390 +39,22 @@
             return;
         }
 
-        // Cek apakah Bootstrap modal berfungsi
-        if (typeof $.fn.modal === 'undefined') {
-            console.error('Bootstrap modal tidak tersedia');
-        } else {
-            console.log('Bootstrap modal tersedia');
-        }
-
-        // Event listener untuk tombol "Tambah Barang Baru"
-        $(document).on('click', '#addNewItem', function(e) {
-            e.preventDefault();
-            console.log('Tombol Tambah Barang Baru diklik');
-            $('#addItemModal').modal('show');
-        });
-
-        // Event listener untuk tombol "Simpan" di dalam modal
-        $('#saveNewItem').click(function() {
-            console.log('Tombol Simpan diklik');
-            var formData = new FormData($('#addItemForm')[0]);
-            
-        });
-    });
-    </script>
-</body>
-</html>
-
-    <div id="app">
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">Admin Dashboard</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#" id="manageItems">Kelola Item</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="manageOrders">Kelola Pesanan</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="manageCategories">Kelola Kategori</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="manageUsers">Kelola Pengguna</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="viewPurchaseHistory">Riwayat Pembelian</a>
-                </li>
-            </ul>
-            <button id="logoutButton" class="btn btn-outline-light">Logout</button>
-        </div>
-    </nav>
-
-        <div class="container mt-4">
-            <div id="content">
-                <!-- Content will be loaded here dynamically -->
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Your JavaScript code to handle API calls and update the content
-    </script>
-</body>
-</html>
-
-    <script>
-        // Your JavaScript code to handle API calls and update the content
-    </script>
-</body>
-</html>
-
-    <style>
-        body {
-            background-color: #f8f9fa;
-            color: #000000;
-        }
-        .dashboard-card {
-            height: 200px;
-            overflow-y: auto;
-        }
-        .dashboard-card .card-body {
-            padding: 1rem;
-        }
-        .dashboard-card h5 {
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 0.5rem;
-        }
-        .dashboard-card .list-group-item {
-            padding: 0.5rem 1rem;
-        }
-        .table {
-            background-color: #ffffff;
-        }
-        .table th, .table td {
-            vertical-align: middle;
-        }
-        .table thead th {
-            background-color: #6c757d;
-            color: #ffffff;
-        }
-        .btn-custom {
-            background-color: #007bff;
-            color: #ffffff;
-        }
-        .navbar {
-            background-color: #343a40;
-        }
-        .navbar-brand, .nav-link {
-            color: #ffffff !important;
-        }
-    </style>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</head>
-<body>
-
-    <div class="container mt-5">
-        <div id="mainContent">
-            <!-- Konten utama akan dimuat di sini -->
-        </div>
-    </div>
-
-    <!-- Modal Edit Stock -->
-    <div class="modal fade" id="editStockModal" tabindex="-1" role="dialog" aria-labelledby="editStockModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editStockModalLabel">Edit Stock</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="editStockForm">
-                        <input type="hidden" id="editStockItemId">
-                        <div class="form-group">
-                            <label>Current Stock: <span id="currentStock"></span></label>
-                        </div>
-                        <div class="form-group">
-                            <label>Stock Type:</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="stockType" id="stockTypeIn" value="in" checked>
-                                <label class="form-check-label" for="stockTypeIn">
-                                    In (Tambah stock)
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="stockType" id="stockTypeOut" value="out">
-                                <label class="form-check-label" for="stockTypeOut">
-                                    Out (Kurangi stock)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="stockQuantity">Quantity:</label>
-                            <input type="number" class="form-control" id="stockQuantity" required min="1">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="saveStockChanges">Save changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Edit Item -->
-    <div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-labelledby="editItemModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editItemModalLabel">Edit Item</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="editItemForm">
-                        <input type="hidden" id="editItemId">
-                        <div class="form-group">
-                            <label for="editItemName">Name:</label>
-                            <input type="text" class="form-control" id="editItemName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editItemDescription">Description:</label>
-                            <textarea class="form-control" id="editItemDescription" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="editItemSellPrice">Sell Price:</label>
-                            <input type="number" class="form-control" id="editItemSellPrice" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="saveItemChanges">Save changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-<!-- Modal Tambah Item Baru -->
-<div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addItemModalLabel">Tambah Barang Baru</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="addItemForm" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="addItemName">Nama:</label>
-                        <input type="text" class="form-control" id="addItemName" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="addItemDescription">Deskripsi:</label>
-                        <textarea class="form-control" id="addItemDescription" name="description" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="addItemSellPrice">Harga Jual:</label>
-                        <input type="number" class="form-control" id="addItemSellPrice" name="sellprice" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="addItemStock">Stock Awal:</label>
-                        <input type="number" class="form-control" id="addItemStock" name="stock" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="addItemFiles">File (Gambar/Video):</label>
-                        <input type="file" class="form-control-file" id="addItemFiles" name="files[]" multiple>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                <button type="button" class="btn btn-primary" id="saveNewItem">Simpan</button>
-            </div>
-        </div>
-    </div>
-</div>
-    <!-- Modal Pesanan Customer dan Riwayat Pembelian -->
-    <div class="modal fade" id="customerOrdersModal" tabindex="-1" role="dialog" aria-labelledby="customerOrdersModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="customerOrdersModalLabel">Pesanan Customer</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="orderStatusFilterContainer" class="form-group">
-                        <label for="orderStatusFilter">Filter by Status:</label>
-                        <select id="orderStatusFilter" class="form-control">
-                            <option value="all">All</option>
-                            <option value="pending">Pending</option>
-                            <option value="approved">Approved</option>
-                            <option value="declined">Declined</option>
-                        </select>
-                    </div>
-                    <div id="customerOrdersContent">
-                        <!-- Orders will be displayed here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Kategori -->
-    <div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="categoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="categoryModalLabel">Kelola Kategori</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="categoryForm">
-                        <input type="hidden" id="categoryId">
-                        <div class="form-group">
-                            <label for="categoryName">Nama Kategori:</label>
-                            <input type="text" class="form-control" id="categoryName" required>
-                        </div>
-                    </form>
-                    <table class="table mt-3">
-                        <thead>
-                            <tr>
-                                <th>Nama</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="categoryList">
-                            <!-- Daftar kategori akan dimuat di sini -->
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary" id="saveCategoryChanges">Simpan</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Pengguna -->
-    <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="userModalLabel">Kelola Pengguna</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Nama</th>
-                                <th>Email</th>
-                                <th>Peran</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userList">
-                            <!-- Daftar pengguna akan dimuat di sini -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tambahkan modal edit user -->
-    <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editUserModalLabel">Edit Pengguna</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="editUserForm">
-                        <input type="hidden" id="editUserId">
-                        <div class="form-group">
-                            <label for="editUserName">Nama:</label>
-                            <input type="text" class="form-control" id="editUserName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editUserEmail">Email:</label>
-                            <input type="email" class="form-control" id="editUserEmail" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary" id="saveUserChanges">Simpan Perubahan</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-    $(document).ready(function() {
-        var token = sessionStorage.getItem('access_token');
-        if (!token) {
-            window.location.href = '/login';
-            return;
-        }
-
         let currentSort = '';
         let currentOrder = 'asc';
+
+        $(document).on('click', '#addbarang', function() {
+            try {
+                console.log('Tombol Tambah Barang Baru diklik');
+                loadCategoriesToDropdown();
+                $('#addItemModal').modal('show');
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Terjadi kesalahan saat menampilkan modal'
+                });
+            }
+        });
 
         function loadItems(page = 1, search = '', sort = '', order = '') {
             let data = { 
@@ -461,7 +69,7 @@
             }
 
             $.ajax({
-                url: '/api/items',
+                url: '/api/admin/items',
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token
@@ -475,13 +83,17 @@
                             if (item.files && item.files.length > 0) {
                                 filesList = '<div class="file-list">';
                                 item.files.forEach(file => {
-                                    const fileName = file.file_path.split('/').pop();
-                                    filesList += `<img src="/storage/${file.file_path}" alt="${fileName}" class="file-thumbnail" style="width: 50px; height: auto; margin-right: 5px;">`;
+                                    filesList += `
+                                        <a href="/storage/${file.file_path}" data-lightbox="item-${item.id}">
+                                            <img src="/storage/${file.file_path}" alt="Item Image" 
+                                                 class="file-thumbnail" style="width: 50px; height: auto; margin-right: 5px;">
+                                        </a>`;
                                 });
                                 filesList += '</div>';
                             } else {
                                 filesList = 'Tidak ada file';
                             }
+                            let categoryName = item.category ? item.category.name : 'Tanpa Kategori';
                             rows += `
                                 <tr>
                                     <td>${(page - 1) * 10 + index + 1}</td>
@@ -489,119 +101,230 @@
                                     <td>${item.description}</td>
                                     <td>${item.stock}</td>
                                     <td>Rp ${Number(item.sellprice).toLocaleString('id-ID')}</td>
+                                    <td>${categoryName}</td>
                                     <td>${filesList}</td>
                                     <td>
                                         <button class="btn btn-sm btn-primary edit-item" data-id="${item.id}">Edit Item</button>
                                         <button class="btn btn-sm btn-info edit-stock" data-id="${item.id}">Edit Stock</button>
                                         <button class="btn btn-sm btn-danger delete-item" data-id="${item.id}">Hapus</button>
                                     </td>
-                                </tr>
-                            `;
+                                </tr>`;
                         });
                         $('#itemTable').html(rows);
 
-                        // Event listeners untuk tombol-tombol
-                        $('.edit-item').click(function() {
-                            var itemId = $(this).data('id');
-                            $.ajax({
-                                url: '/api/admin/items/' + itemId,
-                                method: 'GET',
-                                headers: {
-                                    'Authorization': 'Bearer ' + token
-                                },
-                                success: function(item) {
-                                    $('#editItemId').val(item.id);
-                                    $('#editItemName').val(item.name);
-                                    $('#editItemDescription').val(item.description);
-                                    $('#editItemSellPrice').val(Number(item.sellprice).toLocaleString('id-ID'));
-                                    $('#editItemModal').modal('show');
-                                },
-                                error: function() {
-                                    alert('Gagal mengambil data item');
-                                }
-                            });
-                        });
-
-                        $('.edit-stock').click(function() {
-                            var itemId = $(this).data('id');
-                            $('#editStockItemId').val(itemId);
-                            
-                            $.ajax({
-                                url: '/api/admin/items/' + itemId,
-                                method: 'GET',
-                                headers: {
-                                    'Authorization': 'Bearer ' + token
-                                },
-                                success: function(item) {
-                                    $('#currentStock').text(item.stock);
-                                    $('#editStockModal').modal('show');
-                                },
-                                error: function() {
-                                    alert('Gagal mengambil data item');
-                                }
-                            });
-                        });
-
-                        $('.delete-item').click(function() {
-                            var itemId = $(this).data('id');
-                            if (confirm('Apakah Anda yakin ingin menghapus item ini?')) {
-                                $.ajax({
-                                    url: '/api/admin/items/' + itemId,
-                                    method: 'DELETE',
-                                    headers: {
-                                        'Authorization': 'Bearer ' + token
-                                    },
-                                    success: function(response) {
-                                        alert('Item berhasil dihapus');
-                                        loadItems();
-                                    },
-                                    error: function(xhr) {
-                                        alert('Gagal menghapus item');
-                                    }
-                                });
+                        if (response.last_page > 1) {
+                            let pagination = '';
+                            for (let i = 1; i <= response.last_page; i++) {
+                                pagination += `
+                                    <li class="page-item ${response.current_page === i ? 'active' : ''}">
+                                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                                    </li>`;
                             }
-                        });
-                    } else {
-                        $('#itemTable').html('<tr><td colspan="7" class="text-center">Tidak ada item ditemukan</td></tr>');
-                    }
+                            $('#pagination').html(`
+                                <ul class="pagination justify-content-center">
+                                    ${pagination}
+                                </ul>`);
 
-                    // Tambahkan tombol pagination
-                    let paginationHtml = '';
-                    if (response.last_page > 1) {
-                        paginationHtml += `<nav><ul class="pagination">`;
-                        for (let i = 1; i <= response.last_page; i++) {
-                            paginationHtml += `<li class="page-item ${i === response.current_page ? 'active' : ''}">
-                                <a class="page-link" href="#" data-page="${i}">${i}</a>
-                            </li>`;
+                            $('.page-link').click(function(e) {
+                                e.preventDefault();
+                                let page = $(this).data('page');
+                                loadItems(page, $('#searchInput').val(), currentSort, currentOrder);
+                            });
                         }
-                        paginationHtml += `</ul></nav>`;
+                    } else {
+                        $('#itemTable').html('<tr><td colspan="8" class="text-center">Tidak ada data</td></tr>');
+                        $('#pagination').html('');
                     }
-                    $('#pagination').html(paginationHtml);
-
-                    console.log('Pagination info:', {
-                        currentPage: response.current_page,
-                        lastPage: response.last_page,
-                        total: response.total,
-                        perPage: response.per_page
-                    });
                 },
-                error: function(xhr, status, error) {
-                    console.error('Error:', xhr.responseText);
-                    $('#itemTable').html('<tr><td colspan="7" class="text-center">Error mengambil data: ' + xhr.responseText + '</td></tr>');
-                }
-            });
-
-            console.log('Items loaded successfully');
-            console.log('Attaching click event to #addNewItem');
-            $('#addNewItem').click(function() {
-                try {
-                    console.log('Tombol Tambah Barang Baru diklik');
-                    $('#addItemModal').modal('show');
-                } catch (error) {
-                    console.error('Error showing modal:', error);
+                error: function(xhr) {
+                    console.error('Error:', xhr);
+                    alert('Gagal mengambil data items');
                 }
             });
         }
+
+        // Event listener untuk pencarian
+        $('#searchInput').on('keyup', function() {
+            let searchTerm = $(this).val();
+            loadItems(1, searchTerm, currentSort, currentOrder);
+        });
+
+        // Event listener untuk tombol edit item
+        $(document).on('click', '.edit-item', function() {
+            let itemId = $(this).data('id');
+            $.ajax({
+                url: '/api/admin/items/' + itemId,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(item) {
+                    $('#editItemId').val(item.id);
+                    $('#editItemName').val(item.name);
+                    $('#editItemDescription').val(item.description);
+                    $('#editItemSellPrice').val(Number(item.sellprice).toLocaleString('id-ID'));
+                    $('#editItemModal').modal('show');
+                },
+                error: function() {
+                    alert('Gagal mengambil data item');
+                }
+            });
+        });
+
+        // Event listener untuk tombol edit stok
+        $(document).on('click', '.edit-stock', function() {
+            let itemId = $(this).data('id');
+            $('#editStockItemId').val(itemId);
+            
+            $.ajax({
+                url: '/api/admin/items/' + itemId,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(item) {
+                    $('#currentStock').text(item.stock);
+                    $('#editStockModal').modal('show');
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Gagal mengambil data item'
+                    });
+                }
+            });
+        });
+
+        // Event listener untuk menyimpan perubahan stok
+        $('#saveStockChanges').click(function() {
+            var itemId = $('#editStockItemId').val();
+            var quantity = parseInt($('#stockQuantity').val());
+            var type = $('input[name="stockType"]:checked').val();
+
+            if (!quantity || quantity <= 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Jumlah harus lebih besar dari 0'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Memperbarui Stok...',
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '/api/admin/stocks',
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                data: {
+                    item_id: itemId,
+                    quantity: quantity,
+                    type: type
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Stok berhasil diperbarui'
+                    });
+                    $('#editStockModal').modal('hide');
+                    $('#stockQuantity').val('');
+                    $('input[name="stockType"][value="in"]').prop('checked', true);
+                    loadItems();
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Gagal memperbarui stok';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: errorMessage
+                    });
+                }
+            });
+        });
+
+        // Event listener untuk tombol hapus item
+        $(document).on('click', '.delete-item', function() {
+            let itemId = $(this).data('id');
+            
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Item yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/api/admin/items/' + itemId,
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        },
+                        success: function(response) {
+                            Swal.fire(
+                                'Terhapus!',
+                                'Item berhasil dihapus.',
+                                'success'
+                            );
+                            loadItems();
+                        },
+                        error: function() {
+                            Swal.fire(
+                                'Gagal!',
+                                'Gagal menghapus item.',
+                                'error'
+                            );
+                        }
+                    });
+                }
+            });
+        });
+
+        // Fungsi untuk menampilkan pagination
+        function renderPagination(response) {
+            let paginationHtml = '';
+            if (response.last_page > 1) {
+                paginationHtml = '<nav><ul class="pagination">';
+                for (let i = 1; i <= response.last_page; i++) {
+                    paginationHtml += `
+                        <li class="page-item ${i === response.current_page ? 'active' : ''}">
+                            <a class="page-link" href="#" data-page="${i}">${i}</a>
+                        </li>`;
+                }
+                paginationHtml += '</ul></nav>';
+            }
+            $('#pagination').html(paginationHtml);
+        }
+
+        // Event listener untuk tombol tambah barang
+        $('#addbarang').click(function() {
+            try {
+                console.log('Tombol Tambah Barang Baru diklik');
+                loadCategoriesToDropdown();
+                $('#addItemModal').modal('show');
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Terjadi kesalahan saat menampilkan modal'
+                });
+            }
+        });
 
         function loadCustomerOrders(status = 'all') {
             $.ajax({
@@ -701,33 +424,6 @@
             loadItems(1, $('#searchInput').val(), currentSort, currentOrder);
         });
 
-        $('#saveStockChanges').click(function() {
-            var itemId = $('#editStockItemId').val();
-            var quantity = $('#stockQuantity').val();
-            var type = $('input[name="stockType"]:checked').val();
-
-            $.ajax({
-                url: '/api/admin/stocks',
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                },
-                data: {
-                    item_id: itemId,
-                    quantity: quantity,
-                    type: type
-                },
-                success: function(response) {
-                    alert('stock berhasil diperbarui');
-                    $('#editStockModal').modal('hide');
-                    loadItems();
-                },
-                error: function(xhr) {
-                    alert('Gagal memperbarui stock: ' + xhr.responseJSON.message);
-                }
-            });
-        });
-
         $('#saveItemChanges').click(function() {
             var itemId = $('#editItemId').val();
             var itemData = {
@@ -753,13 +449,15 @@
             });
         });
 
-        $('#addNewItem').click(function() {
-        console.log('Tombol Tambah Barang Baru diklik');
-            $('#addItemModal').modal('show');
-        });
-
         $('#saveNewItem').click(function() {
             var formData = new FormData($('#addItemForm')[0]);
+            
+            Swal.fire({
+                title: 'Menyimpan...',
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
             
             $.ajax({
                 url: '/api/admin/items',
@@ -771,13 +469,21 @@
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    alert('Item baru berhasil ditambahkan');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Item baru berhasil ditambahkan'
+                    });
                     $('#addItemModal').modal('hide');
                     $('#addItemForm')[0].reset();
                     loadItems();
                 },
                 error: function(xhr) {
-                    alert('Gagal menambahkan item baru: ' + xhr.responseJSON.message);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Gagal menambahkan item baru: ' + xhr.responseJSON.message
+                    });
                 }
             });
         });
@@ -839,8 +545,18 @@
         });
 
         $('#logoutButton').click(function() {
-            sessionStorage.removeItem('access_token');
-            window.location.href = '/login';
+            Swal.fire({
+                title: 'Apakah Anda yakin ingin keluar?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, keluar!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    sessionStorage.removeItem('access_token');
+                    window.location.href = '/login';
+                }
+            });
         });
 
         function loadPurchaseHistory() {
@@ -880,7 +596,7 @@
                 <h2 class="text-center mb-4">Kelola Item</h2>
                 <div class="row mb-3">
                     <div class="col-md-8">
-                        <button class="btn btn-success mr-2" id="addNewItem">Tambah Barang Baru</button>
+                        <button class="btn btn-success mr-2" id="addbarang">Tambah Barang Baru</button>
                     </div>
                     <div class="col-md-4">
                         <input type="text" id="searchInput" class="form-control" placeholder="Cari item...">
@@ -895,6 +611,7 @@
                                 <th data-sort="description">Description</th>
                                 <th data-sort="stock">Stock</th>
                                 <th data-sort="sellprice">Sell Price</th>
+                                <th data-sort="category">Category</th>
                                 <th>Files</th>
                                 <th>Actions</th>
                             </tr>
@@ -953,8 +670,7 @@
                                     <button class="btn btn-sm btn-primary edit-category" data-id="${category.id}">Edit</button>
                                     <button class="btn btn-sm btn-danger delete-category" data-id="${category.id}">Hapus</button>
                                 </td>
-                            </tr>
-                        `;
+                            </tr>`;
                     });
                     $('#categoryList').html(categoriesHtml);
                 },
@@ -988,8 +704,7 @@
                                         ${changeRoleText}
                                     </button>
                                 </td>
-                            </tr>
-                        `;
+                            </tr>`;
                     });
                     $('#userList').html(usersHtml);
                 },
@@ -1151,9 +866,30 @@
             }
         });
 
+        // Fungsi untuk load kategori tanpa forEach
+        function loadCategoriesToDropdown() {
+            $.ajax({
+                url: '/api/admin/categories',
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    let options = '<option value="">Pilih Kategori</option>';
+                    for(let i = 0; i < response.length; i++) {
+                        options += `<option value="${response[i].id}">${response[i].name}</option>`;
+                    }
+                    $('#addItemCategory').html(options);
+                },
+                error: function(xhr) {
+                    console.error('Gagal mengambil data kategori:', xhr);
+                    alert('Gagal mengambil data kategori');
+                }
+            });
+        }
+
         // Inisialisasi halaman
         $('#manageItems').click();
     });
     </script>
-</body>
 </html>

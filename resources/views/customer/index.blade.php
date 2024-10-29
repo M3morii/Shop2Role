@@ -353,9 +353,10 @@
                                     'Pesanan berhasil dibuat!',
                                     'success'
                                 ).then(() => {
-                                    $('#cartModal').modal('hide');
+
                                     loadItems();
                                     loadCart();
+                                    $('#cartModal').modal('hide');
                                 });
                             },
                             error: function(xhr) {

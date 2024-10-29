@@ -7,36 +7,29 @@ use App\Models\Stock;
 use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ItemController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
-        $sort = $request->input('sort', 'name');
-        $order = strtolower($request->input('order', 'asc'));
-        $perPage = $request->input('per_page', 10);
-
-        // Validasi order
-        if (!in_array($order, ['asc', 'desc'])) {
-            $order = 'asc';
-        }
-
-        $query = Item::with(['files']);
+        $query = Item::with(['category', 'files']);
         
-        if ($search) {
+        // Handle search
+        if ($request->has('search')) {
+            $search = $request->input('search');
             $query->where('name', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%");
         }
         
-        // Validasi sort
-        if (in_array($sort, ['name', 'description', 'stock', 'sellprice'])) {
-            $query->orderBy($sort, $order);
-        } else {
-            $query->orderBy('name', 'asc');
+        // Handle sorting
+        if ($request->has('sort') && $request->has('order')) {
+            $query->orderBy($request->input('sort'), $request->input('order'));
         }
         
-        $items = $query->paginate($perPage);
+        // Pagination
+        $items = $query->paginate($request->input('per_page', 10));
         
         return response()->json($items);
     }
@@ -71,38 +64,49 @@ class ItemController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'sellprice' => 'required|numeric',
-            'stock' => 'required|numeric',
-            'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4|max:2048'
-        ]);
+        try {
+            DB::beginTransaction();
+            
+            // Validasi request
+            $validated = $request->validate([
+                'name' => 'required|string',
+                'description' => 'required|string',
+                'sellprice' => 'required|numeric',
+                'stock' => 'required|numeric',
+                'category_id' => 'required|exists:categories,id',
+                'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
+            // Simpan item
+            $item = Item::create([
+                'name' => $validated['name'],
+                'description' => $validated['description'],
+                'sellprice' => $validated['sellprice'],
+                'stock' => $validated['stock'],
+                'category_id' => $validated['category_id']
+            ]);
 
-        $item = Item::create($request->only('name', 'description', 'sellprice', 'stock'));
-
-        Stock::create([
-            'item_id' => $item->id,
-            'type' => 'in',
-            'quantity' => $request->stock
-        ]);
-
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $filePath = $file->store('uploads', 'public');
-                File::create([
-                    'item_id' => $item->id,
-                    'file_path' => $filePath,
-                    'file_type' => $file->getClientOriginalExtension(),
-                ]);
+            // Handle file upload
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $file) {
+                    $path = $file->store('public/items');
+                    
+                    // Simpan informasi file ke database
+                    File::create([
+                        'item_id' => $item->id,
+                        'file_path' => str_replace('public/', '', $path)
+                    ]);
+                }
             }
-        }
 
-        return response()->json(['message' => 'Item berhasil dibuat', 'item' => $item], 201);
+            DB::commit();
+            return response()->json(['message' => 'Item berhasil ditambahkan', 'item' => $item->load('files')]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error creating item: ' . $e->getMessage());
+            return response()->json(['message' => 'Gagal menambahkan item: ' . $e->getMessage()], 500);
+        }
     }
 
     public function update(Request $request, $id)

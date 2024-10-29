@@ -34,85 +34,94 @@ class StockController extends Controller
         // Validasi input
         $request->validate([
             'item_id' => 'required|exists:items,id',
-            'quantity' => 'required|integer',
-            'type' => 'required|in:in,out,initial',
+            'quantity' => 'required|integer|min:1',
+            'type' => 'required|in:in,out',
         ]);
 
-        // Ambil item dan stock terkait
-        $item = Item::find($request->item_id);
-        $stock = Stock::where('item_id', $item->id)->first();
-
-        // Tentukan apakah menambah atau mengurangi stock
-        if ($request->type === 'in') {
-            // Tambah quantity di stock
-            $stock->quantity += $request->quantity;
-
-            // Juga tambahkan ke stock dalam items
-            $item->stock += $request->quantity; // Pastikan kolom 'stock' ada di tabel items
-        } else {
-            // Kurangi quantity di stock
-            if ($stock->quantity >= $request->quantity) {
-                $stock->quantity -= $request->quantity;
-
-                // Juga kurangi dari stock dalam items
-                $item->stock -= $request->quantity; // Pastikan kolom 'stock' ada di tabel items
+        try {
+            // Ambil item
+            $item = Item::findOrFail($request->item_id);
+            
+            // Tentukan apakah menambah atau mengurangi stock
+            if ($request->type === 'in') {
+                $item->stock += $request->quantity;
             } else {
-                return response()->json(['message' => 'Not enough stock available.'], 400);
+                // Cek apakah stok cukup untuk dikurangi
+                if ($item->stock < $request->quantity) {
+                    return response()->json([
+                        'message' => 'Stok tidak mencukupi untuk pengurangan'
+                    ], 400);
+                }
+                $item->stock -= $request->quantity;
             }
+
+            // Simpan perubahan stok item
+            $item->save();
+
+            // Catat riwayat perubahan stok
+            Stock::create([
+                'item_id' => $request->item_id,
+                'quantity' => $request->quantity,
+                'type' => $request->type
+            ]);
+
+            return response()->json([
+                'message' => 'Stok berhasil diperbarui',
+                'current_stock' => $item->stock
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat memperbarui stok: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function reduceStock($itemId, $quantity)
+    {
+        // Cari stok berdasarkan item ID
+        $stock = Stock::where('item_id', $itemId)->first();
+
+        // Periksa apakah stok ada
+        if (!$stock) {
+            return response()->json(['message' => 'Stok tidak ditemukan'], 404);
         }
 
-        // Simpan perubahan
+        // Periksa apakah jumlah stok mencukupi
+        if ($stock->quantity < $quantity) {
+            return response()->json(['message' => 'Stok tidak cukup'], 400);
+        }
+
+        // Kurangi jumlah stok
+        $stock->quantity -= $quantity;
         $stock->save();
-        $item->save(); // Simpan item setelah memperbarui stock
 
-        return response()->json(['message' => 'Stock updated successfully.']);
-    }
-    public function reduceStock($itemId, $quantity)
-{
-    // Cari stok berdasarkan item ID
-    $stock = Stock::where('item_id', $itemId)->first();
+        // Simpan log pengeluaran ke tabel stok
+        Stock::create([
+            'item_id' => $itemId,
+            'quantity' => $quantity,
+            'type' => 'out', // Tipe pengeluaran
+        ]);
 
-    // Periksa apakah stok ada
-    if (!$stock) {
-        return response()->json(['message' => 'Stok tidak ditemukan'], 404);
+        return response()->json(['message' => 'Stok berhasil dikurangi', 'remaining_stock' => $stock->quantity]);
     }
 
-    // Periksa apakah jumlah stok mencukupi
-    if ($stock->quantity < $quantity) {
-        return response()->json(['message' => 'Stok tidak cukup'], 400);
+    public function purchaseHistory()
+    {
+        $stocks = Stock::with('item')
+                       ->orderBy('created_at', 'desc')
+                       ->get();
+
+        $formattedStocks = $stocks->map(function ($stock) {
+            return [
+                'id' => $stock->id,
+                'item_name' => $stock->item->name,
+                'quantity' => $stock->quantity,
+                'type' => $stock->type,
+                'date' => $stock->created_at->format('Y-m-d H:i:s'),
+            ];
+        });
+
+        return response()->json(['purchase_history' => $formattedStocks], 200);
     }
-
-    // Kurangi jumlah stok
-    $stock->quantity -= $quantity;
-    $stock->save();
-
-    // Simpan log pengeluaran ke tabel stok
-    Stock::create([
-        'item_id' => $itemId,
-        'quantity' => $quantity,
-        'type' => 'out', // Tipe pengeluaran
-    ]);
-
-    return response()->json(['message' => 'Stok berhasil dikurangi', 'remaining_stock' => $stock->quantity]);
-}
-
-public function purchaseHistory()
-{
-    $stocks = Stock::with('item')
-                   ->orderBy('created_at', 'desc')
-                   ->get();
-
-    $formattedStocks = $stocks->map(function ($stock) {
-        return [
-            'id' => $stock->id,
-            'item_name' => $stock->item->name,
-            'quantity' => $stock->quantity,
-            'type' => $stock->type,
-            'date' => $stock->created_at->format('Y-m-d H:i:s'),
-        ];
-    });
-
-    return response()->json(['purchase_history' => $formattedStocks], 200);
-}
 
 }

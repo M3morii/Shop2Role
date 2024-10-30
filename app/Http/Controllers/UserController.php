@@ -10,8 +10,15 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::all();
-        return response()->json(['users' => $users]);
+        try {
+            $users = User::all();
+            return response()->json($users);
+        } catch (\Exception $e) {
+            \Log::error('Error loading users: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Gagal memuat daftar pengguna'
+            ], 500);
+        }
     }
 
     public function update(Request $request, $id)
@@ -37,17 +44,34 @@ class UserController extends Controller
         return response()->json(['message' => 'Pengguna berhasil diperbarui', 'user' => $user]);
     }
 
-    public function changeRole(Request $request, $id)
+    public function changeRole($id)
     {
-        $request->validate([
-            'role_id' => 'required|in:1,2'
-        ]);
+        try {
+            $user = User::findOrFail($id);
+            
+            // Jika user adalah super admin (user pertama), jangan izinkan perubahan
+            if ($user->id === 1) {
+                return response()->json([
+                    'message' => 'Tidak dapat mengubah role Super Admin'
+                ], 403);
+            }
 
-        $user = User::findOrFail($id);
-        $user->role_id = $request->role_id;
-        $user->save();
+            // Toggle role antara admin (1) dan customer (2)
+            $newRole = $user->role_id === 1 ? 2 : 1;
+            $user->role_id = $newRole;
+            $user->save();
 
-        return response()->json(['message' => 'Peran pengguna berhasil diubah', 'user' => $user]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Role berhasil diubah',
+                'new_role' => $newRole
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error changing user role: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Gagal mengubah role pengguna'
+            ], 500);
+        }
     }
 
     public function destroy($id)

@@ -9,29 +9,40 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ItemController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Item::with(['category', 'files']);
-        
-        // Handle search
-        if ($request->has('search')) {
-            $search = $request->input('search');
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+        try {
+            $query = Item::with(['category', 'files']);
+
+            // Filter berdasarkan pencarian
+            if ($request->has('search') && !empty($request->search)) {
+                $searchTerm = $request->search;
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                      ->orWhere('description', 'like', "%{$searchTerm}%");
+                });
+            }
+
+            // Filter berdasarkan kategori
+            if ($request->has('category_id') && !empty($request->category_id)) {
+                $query->where('category_id', $request->category_id);
+            }
+
+            // Ambil data dengan pagination
+            $items = $query->orderBy('created_at', 'desc')
+                          ->paginate(10);
+
+            return response()->json($items);
+        } catch (\Exception $e) {
+            \Log::error('Error loading items: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Gagal memuat data item'
+            ], 500);
         }
-        
-        // Handle sorting
-        if ($request->has('sort') && $request->has('order')) {
-            $query->orderBy($request->input('sort'), $request->input('order'));
-        }
-        
-        // Pagination
-        $items = $query->paginate($request->input('per_page', 10));
-        
-        return response()->json($items);
     }
 
     // Metode baru untuk pencarian
@@ -89,12 +100,12 @@ class ItemController extends Controller
             // Handle file upload
             if ($request->hasFile('files')) {
                 foreach ($request->file('files') as $file) {
-                    $path = $file->store('public/items');
+                    $path = $file->store('items', 'public');
                     
                     // Simpan informasi file ke database
                     File::create([
                         'item_id' => $item->id,
-                        'file_path' => str_replace('public/', '', $path)
+                        'file_path' => $path
                     ]);
                 }
             }
@@ -111,28 +122,66 @@ class ItemController extends Controller
 
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'sellprice' => 'nullable|numeric',
-            'files' => 'nullable|array',
-            'files.*' => 'file|mimes:jpeg,png,jpg,gif,mp4|max:2048'
-        ]);
+        try {
+            DB::beginTransaction();
+            
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'sellprice' => 'required|numeric|min:0',
+                'category_id' => 'required|exists:categories,id',
+                'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048',
+                'replace_images' => 'required|in:0,1'
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            if ($validator->fails()) {
+                return response()->json(['message' => $validator->errors()], 422);
+            }
+
+            $item = Item::find($id);
+            if (!$item) {
+                return response()->json(['message' => 'Item tidak ditemukan'], 404);
+            }
+
+            // Update data item
+            $item->update([
+                'name' => $request->name,
+                'description' => $request->description,
+                'sellprice' => $request->sellprice,
+                'category_id' => $request->category_id
+            ]);
+
+            // Handle file upload jika ada file baru dan replace_images = 1
+            if ($request->hasFile('files') && $request->replace_images === '1') {
+                // Hapus file lama
+                foreach ($item->files as $file) {
+                    Storage::disk('public')->delete($file->file_path);
+                    $file->delete();
+                }
+                
+                // Upload file baru
+                foreach ($request->file('files') as $file) {
+                    $path = $file->store('items', 'public');
+                    File::create([
+                        'item_id' => $item->id,
+                        'file_path' => $path
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Item berhasil diperbarui',
+                'item' => $item->fresh()->load('files')
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error updating item: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Gagal memperbarui item: ' . $e->getMessage()
+            ], 500);
         }
-
-        $item = Item::find($id);
-        if (!$item) {
-            return response()->json(['message' => 'Item tidak ditemukan'], 404);
-        }
-
-        $item->update($request->only('name', 'description', 'sellprice'));
-
-        $this->saveFiles($request, $item);
-
-        return response()->json(['message' => 'Item berhasil diperbarui', 'item' => $item], 200);
     }
 
     public function destroy($id)
@@ -162,6 +211,36 @@ class ItemController extends Controller
                     'file_type' => $file->getClientOriginalExtension(),
                 ]);
             }
+        }
+    }
+
+    public function deleteFile($itemId, $fileId)
+    {
+        try {
+            // Cari file berdasarkan item_id dan file_id
+            $file = File::where('item_id', $itemId)
+                        ->where('id', $fileId)
+                        ->firstOrFail();
+
+            // Hapus file fisik dari storage
+            if (Storage::disk('public')->exists($file->file_path)) {
+                Storage::disk('public')->delete($file->file_path);
+            }
+            
+            // Hapus record dari database
+            $file->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File berhasil dihapus'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting file: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus file: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

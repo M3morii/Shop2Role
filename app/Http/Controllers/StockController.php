@@ -107,21 +107,18 @@ class StockController extends Controller
 
     public function purchaseHistory()
     {
-        $stocks = Stock::with('item')
-                       ->orderBy('created_at', 'desc')
-                       ->get();
-
-        $formattedStocks = $stocks->map(function ($stock) {
-            return [
-                'id' => $stock->id,
-                'item_name' => $stock->item->name,
-                'quantity' => $stock->quantity,
-                'type' => $stock->type,
-                'date' => $stock->created_at->format('Y-m-d H:i:s'),
-            ];
-        });
-
-        return response()->json(['purchase_history' => $formattedStocks], 200);
+        try {
+            $history = Stock::with(['item'])
+                           ->orderBy('created_at', 'desc')
+                           ->get();
+                           
+            return response()->json($history);
+        } catch (\Exception $e) {
+            \Log::error('Error loading purchase history: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Gagal memuat riwayat pembelian'
+            ], 500);
+        }
     }
 
 }

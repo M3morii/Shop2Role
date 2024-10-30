@@ -12,10 +12,30 @@ use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with('item')->get();
-        return response()->json(['success' => true, 'orders' => $orders]);
+        try {
+            $query = Order::with(['user', 'item'])
+                         ->orderBy('created_at', 'desc');
+
+            // Filter berdasarkan status
+            if ($request->has('status') && $request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
+
+            $orders = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'orders' => $orders
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error loading orders: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat data pesanan'
+            ], 500);
+        }
     }
     
     public function store(Request $request)

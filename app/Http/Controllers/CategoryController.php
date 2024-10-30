@@ -11,8 +11,15 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::all();
-        return response()->json($categories, 200);
+        try {
+            $categories = Category::withCount('items')->get();
+            return response()->json($categories);
+        } catch (\Exception $e) {
+            Log::error('Error loading categories: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Gagal memuat kategori'
+            ], 500);
+        }
     }
 
     public function store(Request $request)

@@ -13,20 +13,9 @@
                         <input type="hidden" id="categoryId">
                         <div class="form-group">
                             <label for="categoryName">Nama Kategori:</label>
-                            <input type="text" class="form-control" id="categoryName" required>
+                            <input type="text" class="form-control" id="categoryName" required autocomplete="off">
                         </div>
                     </form>
-                    <table class="table mt-3">
-                        <thead>
-                            <tr>
-                                <th>Nama</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="categoryList">
-                            <!-- Daftar kategori akan dimuat di sini -->
-                        </tbody>
-                    </table>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>

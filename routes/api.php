@@ -29,7 +29,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'role:1']
     Route::get('/items', [ItemController::class, 'index']);
     Route::get('/items/{id}', [ItemController::class, 'show']);
     Route::post('/items', [ItemController::class, 'store']);
-    Route::post('/items/{id}', [ItemController::class, 'update']);
+    Route::post('/items/{id}/update', [ItemController::class, 'update']);
     Route::delete('/items/{id}', [ItemController::class, 'destroy']);
 
     // Stock Routes
@@ -67,6 +67,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'role:1']
     Route::put('/users/{id}/change-role', [UserController::class, 'changeRole']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
     Route::put('/users/{id}', [UserController::class, 'update']);
+
+    // Delete File Routes
+    Route::delete('/items/{itemId}/files/{fileId}', [ItemController::class, 'deleteFile']);
 });
 
 // Customer routes

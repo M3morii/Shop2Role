@@ -1,10 +1,12 @@
 <!-- Modal Tambah Item Baru -->
-<div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<div class="modal fade" id="addItemModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addItemModalLabel">Tambah Barang Baru</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle"></i> Tambah Barang Baru
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -39,12 +41,15 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                <button type="button" class="btn btn-primary" id="saveNewItem">Simpan</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Tutup
+                </button>
+                <button type="button" class="btn btn-primary" id="saveNewItem">
+                    <i class="fas fa-save"></i> Simpan
+                </button>
             </div>
         </div>
     </div>
-</div>
 </div>
 
 <!-- Modal Edit Stock -->
@@ -93,12 +98,14 @@
 </div>
 
 <!-- Modal Edit Item -->
-<div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-labelledby="editItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<div class="modal fade" id="editItemModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editItemModalLabel">Edit Barang</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit"></i> Edit Barang
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>

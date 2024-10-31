@@ -65,8 +65,6 @@
                     <div class="col-md-5">
                         <div class="input-group">
                             <input type="text" id="searchInput" class="form-control" placeholder="Cari item..." autocomplete="off">
-                            <div class="input-group-append">
-                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -80,23 +78,17 @@
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th data-sort="name">Name</th>
-                                <th data-sort="description">Description</th>
-                                <th data-sort="stock">Stock</th>
-                                <th data-sort="sellprice">Sell Price</th>
-                                <th data-sort="category">Category</th>
-                                <th>Files</th>
-                                <th>Actions</th>
+                                <th data-sort="name">Nama</th>
+                                <th data-sort="description">Deskripsi</th>
+                                <th data-sort="stock">Stok</th>
+                                <th data-sort="sellprice">Harga Jual</th>
+                                <th data-sort="category">Kategori</th>
+                                <th>Gambar</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="itemTable">
-                            <tr>
-                                <td colspan="8" class="text-center">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="sr-only">Loading...</span>
-                                    </div>
-                                </td>
-                            </tr>
+                            <!-- Content will be loaded dynamically -->
                         </tbody>
                     </table>
                 </div>

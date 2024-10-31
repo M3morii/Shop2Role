@@ -1,37 +1,16 @@
-function loadCategoriesToFilter() {
-    console.log('Loading categories for filter...');
-    
-    $.ajax({
-        url: '/api/admin/categories',
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + token
-        },
-        success: function(response) {
-            console.log('Categories response:', response);
-            
-            const categories = Array.isArray(response) ? response : 
-                             (response.data ? response.data : []);
-            
-            let options = '<option value="">Semua Kategori</option>';
-            if (categories.length > 0) {
-                categories.forEach(category => {
-                    options += `<option value="${category.id}">${category.name}</option>`;
-                });
-            }
-            
-            $('#categoryFilter').html(options);
-        },
-        error: function(xhr) {
-            console.error('Error loading categories:', xhr);
-            $('#categoryFilter').html('<option value="">Error loading categories</option>');
-        }
-    });
+function getToken() {
+    const token = sessionStorage.getItem('access_token');
+    if (!token) {
+        window.location.href = '/login';
+        return null;
+    }
+    return token;
 }
 
 function loadItems(page = 1, search = '', categoryId = '') {
-    console.log('Loading items with:', { page, search, categoryId });
-    
+    const token = getToken();
+    if (!token) return;
+
     $.ajax({
         url: '/api/admin/items',
         method: 'GET',
@@ -129,14 +108,12 @@ function loadItems(page = 1, search = '', categoryId = '') {
             }
         },
         error: function(xhr) {
-            console.error('Error loading items:', xhr);
-            $('#itemTable').html(`
-                <tr>
-                    <td colspan="8" class="text-center text-danger">
-                        Gagal memuat data item
-                    </td>
-                </tr>
-            `);
+            console.error('Error:', xhr);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Gagal memuat data'
+            });
         }
     });
 }
@@ -306,14 +283,16 @@ function handleSaveError(xhr) {
 
 $(document).on('click', '#addbarang', function() {
     $('#addItemForm')[0].reset();
-    
-    loadCategoriesToDropdown('#addItemCategory');
-    
+    loadCategoriesToSelect('#addItemCategory');
     $('#addItemModal').modal('show');
+    $('#addItemModal').find('.modal-content').addClass('animate__animated animate__fadeIn');
 });
 
-function loadCategoriesToDropdown(selectElement) {
-    $.ajax({
+function loadCategoriesToSelect(selectElement, selectedId = null) {
+    const token = getToken();
+    if (!token) return;
+
+    return $.ajax({
         url: '/api/admin/categories',
         method: 'GET',
         headers: {
@@ -321,19 +300,18 @@ function loadCategoriesToDropdown(selectElement) {
         },
         success: function(response) {
             let options = '<option value="">Pilih Kategori</option>';
-            if (Array.isArray(response)) {
-                response.map(category => {
-                    options += `<option value="${category.id}">${category.name}</option>`;
-                });
-            }
+            response.forEach(category => {
+                const selected = selectedId && selectedId == category.id ? 'selected' : '';
+                options += `<option value="${category.id}" ${selected}>${category.name}</option>`;
+            });
             $(selectElement).html(options);
         },
         error: function(xhr) {
-            console.error('Gagal memuat kategori:', xhr);
+            console.error('Error:', xhr);
             Swal.fire({
                 icon: 'error',
-                title: 'Oops...',
-                text: 'Gagal memuat daftar kategori'
+                title: 'Error!',
+                text: 'Gagal memuat kategori'
             });
         }
     });
@@ -546,4 +524,138 @@ $(document).on('click', '.edit-stock', function() {
             });
         }
     });
+});
+
+function loadCategoriesToSelect(selectElement, selectedId = null) {
+    const token = getToken();
+    if (!token) return;
+
+    return $.ajax({
+        url: '/api/admin/categories',
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        success: function(response) {
+            let options = '<option value="">Pilih Kategori</option>';
+            response.forEach(category => {
+                const selected = selectedId && selectedId == category.id ? 'selected' : '';
+                options += `<option value="${category.id}" ${selected}>${category.name}</option>`;
+            });
+            $(selectElement).html(options);
+        },
+        error: function(xhr) {
+            console.error('Error:', xhr);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Gagal memuat kategori'
+            });
+        }
+    });
+}
+
+function loadCategoriesToFilter() {
+    const token = getToken();
+    if (!token) return;
+
+    $.ajax({
+        url: '/api/admin/categories',
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        success: function(response) {
+            let options = '<option value="">Semua Kategori</option>';
+            response.forEach(category => {
+                options += `<option value="${category.id}">${category.name}</option>`;
+            });
+            $('#categoryFilter').html(options);
+        },
+        error: function(xhr) {
+            console.error('Error:', xhr);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Gagal memuat kategori'
+            });
+        }
+    });
+}
+
+function editItem(itemId) {
+    const token = getToken();
+    if (!token) return;
+
+    Swal.fire({
+        title: 'Edit Barang',
+        text: 'Apakah Anda ingin mengedit barang ini?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, edit',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#007bff',
+        cancelButtonColor: '#6c757d',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Memuat Data...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            loadCategoriesToSelect('#editItemCategory').then(() => {
+                $.ajax({
+                    url: `/api/admin/items/${itemId}`,
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    success: function(response) {
+                        Swal.close();
+                        $('#editItemId').val(response.id);
+                        $('#editItemName').val(response.name);
+                        $('#editItemDescription').val(response.description);
+                        $('#editItemSellPrice').val(response.sellprice);
+                        $('#editItemCategory').val(response.category_id);
+                        
+                        if (response.files && response.files.length > 0) {
+                            let imagesHtml = response.files.map(file => `
+                                <div class="mb-2">
+                                    <img src="${file.url}" class="img-thumbnail" style="height: 100px">
+                                </div>`
+                            ).join('');
+                            $('#currentImages').html(imagesHtml);
+                        } else {
+                            $('#currentImages').html('<p class="text-muted">Tidak ada gambar</p>');
+                        }
+                        
+                        Swal.close();
+                        $('#editItemModal').modal('show');
+                        $('#editItemModal').find('.modal-content').addClass('animate__animated animate__fadeIn');
+                    },
+                    error: function(xhr) {
+                        console.error('Error:', xhr);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Gagal memuat data item'
+                        });
+                    }
+                });
+            });
+        }
+    });
+}
+
+// Initialize
+$(document).ready(function() {
+    const token = getToken();
+    if (!token) return;
+    
+    loadItems();
+    loadCategoriesToFilter();
 });

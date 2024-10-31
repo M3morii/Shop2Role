@@ -10,6 +10,10 @@
 
     <!-- CDN jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Tambahkan CDN SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="container mt-5">
@@ -59,9 +63,22 @@
                 var password_confirmation = $('#password_confirmation').val();
 
                 if (password !== password_confirmation) {
-                    $('#errorMessage').text('Password dan konfirmasi password tidak cocok').removeClass('d-none');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Password dan konfirmasi password tidak cocok!'
+                    });
                     return;
                 }
+
+                // Tampilkan loading
+                Swal.fire({
+                    title: 'Mohon tunggu...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
                 $.ajax({
                     url: '/api/register',
@@ -74,12 +91,23 @@
                         password_confirmation: password_confirmation,
                     },
                     success: function(response) {
-                        // Tambahkan logika untuk menangani respons sukses
-                        console.log('Registrasi berhasil:', response);
-                        // Redirect ke halaman login atau tampilkan pesan sukses
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Registrasi Berhasil!',
+                            text: 'Anda akan dialihkan ke halaman login',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = '/login';
+                        });
                     },
                     error: function(xhr) {
-                        $('#errorMessage').text(xhr.responseJSON.message).removeClass('d-none');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Registrasi Gagal',
+                            text: xhr.responseJSON.message || 'Terjadi kesalahan saat registrasi',
+                            confirmButtonColor: '#3085d6'
+                        });
                     }
                 });
             });

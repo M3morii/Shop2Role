@@ -64,11 +64,8 @@
                     </div>
                     <div class="col-md-5">
                         <div class="input-group">
-                            <input type="text" id="searchInput" class="form-control" placeholder="Cari item...">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Cari item..." autocomplete="off">
                             <div class="input-group-append">
-                                <span class="input-group-text">
-                                    <i class="fas fa-search"></i>
-                                </span>
                             </div>
                         </div>
                     </div>

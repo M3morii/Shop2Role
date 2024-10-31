@@ -10,6 +10,10 @@
 
     <!-- CDN jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- CDN SweetAlert2 CSS & JS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="container mt-5">
@@ -50,6 +54,16 @@
 
         $('#loginForm').submit(function(event) {
             event.preventDefault();
+            
+            // Tampilkan loading
+            Swal.fire({
+                title: 'Mohon tunggu...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             $.ajax({
                 url: '/api/login',
                 type: 'POST',

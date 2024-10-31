@@ -70,6 +70,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'role:1']
 
     // Delete File Routes
     Route::delete('/items/{itemId}/files/{fileId}', [ItemController::class, 'deleteFile']);
+
 });
 
 // Customer routes

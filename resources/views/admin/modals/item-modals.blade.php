@@ -12,7 +12,7 @@
                 <form id="addItemForm" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="addItemName">Nama:</label>
-                        <input type="text" class="form-control" id="addItemName" name="name" required>
+                        <input type="text" class="form-control" id="addItemName" name="name" required autocomplete="off">
                     </div>
                     <div class="form-group">
                         <label for="addItemDescription">Deskripsi:</label>

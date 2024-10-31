@@ -81,20 +81,27 @@ function loadItems(page = 1, search = '', categoryId = '') {
 
                     items += `
                         <tr>
-                            <td>${startIndex + index + 1}</td>
+                            <td>${index + 1}</td>
                             <td>${item.name}</td>
-                            <td>${item.description || '-'}</td>
-                            <td>${item.stock}</td>
+                            <td>${item.description}</td>
+                            <td>
+                                ${item.stock}
+                                <button class="btn btn-sm btn-info edit-stock ml-2" data-id="${item.id}" data-stock="${item.stock}">
+                                    <i class="fas fa-boxes"></i>
+                                </button>
+                            </td>
                             <td>${formatCurrency(item.sellprice)}</td>
                             <td>${item.category ? item.category.name : '-'}</td>
                             <td>${filesHtml}</td>
                             <td>
-                                <button class="btn btn-sm btn-warning edit-item" data-id="${item.id}">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger delete-item" data-id="${item.id}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-primary edit-item" data-id="${item.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-item" data-id="${item.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -418,3 +425,125 @@ function formatCurrency(num) {
     .replace(/\s/g, '')  // Hapus spasi
     .replace(/,00/g, ''); // Hapus ,00
 }
+
+$(document).on('click', '.delete-item', function() {
+    const itemId = $(this).data('id');
+    Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: "Item yang dihapus tidak dapat dikembalikan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: `/api/admin/items/${itemId}`,
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    Swal.fire(
+                        'Terhapus!',
+                        'Item berhasil dihapus.',
+                        'success'
+                    );
+                    loadItems();
+                },
+                error: function(xhr) {
+                    Swal.fire(
+                        'Error!',
+                        'Gagal menghapus item.',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+});
+
+$(document).on('click', '.edit-stock', function() {
+    const itemId = $(this).data('id');
+    const currentStock = $(this).data('stock');
+    
+    Swal.fire({
+        title: 'Edit Stock',
+        html: `
+            <div class="form-group">
+                <label>Stock Saat Ini: ${currentStock}</label>
+                <div class="mt-2">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="type" id="stockIn" value="in" checked>
+                        <label class="form-check-label" for="stockIn">Tambah (+)</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="type" id="stockOut" value="out">
+                        <label class="form-check-label" for="stockOut">Kurang (-)</label>
+                    </div>
+                </div>
+                <input type="number" id="stockChange" class="form-control mt-2" min="1" placeholder="Masukkan jumlah">
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan',
+        cancelButtonText: 'Batal',
+        preConfirm: () => {
+            const stockChange = document.getElementById('stockChange').value;
+            const type = document.querySelector('input[name="type"]:checked').value;
+            
+            if (!stockChange || stockChange <= 0) {
+                Swal.showValidationMessage('Masukkan jumlah stock yang valid');
+                return false;
+            }
+            
+            return { stockChange, type };
+        }
+    }).then((result) => {
+        if (result.isConfirmed && result.value) {
+            const { stockChange, type } = result.value;
+            
+            $.ajax({
+                url: '/api/admin/stocks',
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                data: {
+                    item_id: itemId,
+                    quantity: parseInt(stockChange),
+                    type: type
+                },
+                success: function(response) {
+                    let message = '';
+                    if (type === 'in') {
+                        message = `Stock berhasil ditambah sebanyak ${stockChange}`;
+                    } else {
+                        message = `Stock berhasil dikurangi sebanyak ${stockChange}`;
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: message
+                    }).then(() => {
+                        loadItems();
+                    });
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Gagal memperbarui stock.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: errorMessage
+                    });
+                }
+            });
+        }
+    });
+});

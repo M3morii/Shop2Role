@@ -1,32 +1,39 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark admin-navbar">
     <div class="container">
-        <a class="navbar-brand" href="#">Admin Dashboard</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="manageItems">Kelola Barang</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="manageOrders">Kelola Pesanan</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="manageCategories">Kelola Kategori</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="purchaseHistory">Riwayat Pembelian</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="manageUsers">Kelola Pengguna</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="logoutButton">Logout</a>
-                </li>
-            </ul>
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <i class="bi bi-shield-lock me-2"></i>
+            Admin Dashboard
+        </a>
+        <div class="admin-nav-items">
+            <button class="admin-nav-btn outline" id="manageItems">
+                <i class="bi bi-box-seam me-1"></i>
+                Kelola Barang
+            </button>
+            
+            <button class="admin-nav-btn outline" id="manageOrders">
+                <i class="bi bi-cart-check me-1"></i>
+                Kelola Pesanan
+            </button>
+            
+            <button class="admin-nav-btn outline" id="manageCategories">
+                <i class="bi bi-tags me-1"></i>
+                Kategori
+            </button>
+            
+            <button class="admin-nav-btn outline" id="purchaseHistory">
+                <i class="bi bi-clock-history me-1"></i>
+                Riwayat
+            </button>
+            
+            <button class="admin-nav-btn outline" id="manageUsers">
+                <i class="bi bi-people me-1"></i>
+                Pengguna
+            </button>
+            
+            <button id="logoutButton" class="admin-nav-btn text-danger outline">
+                <i class="bi bi-box-arrow-right me-1"></i>
+                Logout
+            </button>
         </div>
     </div>
 </nav> 

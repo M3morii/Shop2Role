@@ -20,7 +20,12 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/items', [ItemController::class, 'index']);
     Route::get('/items/search', [ItemController::class, 'search']); // Rute baru untuk pencarian
     Route::get('/stocks', [StockController::class, 'index']);
+
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/categories/{id}', [CategoryController::class, 'show']);
 });
+
+
 
 // Rute admin
 Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'role:1']

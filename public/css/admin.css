@@ -47,51 +47,13 @@ body {
 }
 
 .navbar {
-    background-color: #343a40;
+    background-color: #000000;
 }
 
 .navbar-brand, .nav-link {
     color: #ffffff !important;
 }
-body {
-    background-color: #f8f9fa;
-    color: #000000;
-}
-.dashboard-card {
-    height: 200px;
-    overflow-y: auto;
-}
-.dashboard-card .card-body {
-    padding: 1rem;
-}
-.dashboard-card h5 {
-    margin-bottom: 1rem;
-    border-bottom: 1px solid #dee2e6;
-    padding-bottom: 0.5rem;
-}
-.dashboard-card .list-group-item {
-    padding: 0.5rem 1rem;
-}
-.table {
-    background-color: #ffffff;
-}
-.table th, .table td {
-    vertical-align: middle;
-}
-.table thead th {
-    background-color: #6c757d;
-    color: #ffffff;
-}
-.btn-custom {
-    background-color: #007bff;
-    color: #ffffff;
-}
-.navbar {
-    background-color: #343a40;
-}
-.navbar-brand, .nav-link {
-    color: #ffffff !important;
-}
+
 .badge-success {
     background-color: #28a745;
     color: white;
@@ -100,4 +62,76 @@ body {
 .badge-danger {
     background-color: #dc3545;
     color: white;
+}
+
+/* Admin Navbar Styles */
+.admin-navbar {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    /* atau bisa juga menggunakan */
+    /* background: linear-gradient(135deg, #232323 0%, #303030 100%); */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1rem 0;
+}
+.admin-nav-items {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.admin-nav-btn {
+    background: none;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.admin-nav-btn.outline {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+}
+
+.admin-nav-btn.outline:hover {
+    border-color: #ffffff;
+}
+
+.admin-nav-btn i {
+    font-size: 1.1rem;
+}
+
+.text-danger {
+    color: #ff4444 !important;
+    border-color: #ff4444 !important;
+}
+
+.text-danger:hover {
+    color: #ff6666 !important;
+    border-color: #ff6666 !important;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+    .admin-nav-items {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .admin-nav-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Override existing navbar styles */
+.navbar {
+    background-color: transparent;
+}
+
+.navbar-brand, .nav-link {
+    color: #ffffff !important;
+    font-weight: 500;
 }

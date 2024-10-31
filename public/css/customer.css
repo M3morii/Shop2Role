@@ -1,0 +1,97 @@
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.price {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #28a745;
+    margin-bottom: 0.5rem;
+}
+
+.badge-stock {
+    font-size: 0.9rem;
+}
+
+.total-price {
+    font-weight: bold;
+    color: #28a745;
+}
+
+.card-actions {
+    margin-top: auto;
+}
+
+#messageContainer {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+/* Navbar Styling */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar .btn {
+    transition: all 0.3s ease;
+}
+
+.navbar .btn:hover {
+    transform: translateY(-2px);
+}
+
+.navbar .btn-outline-primary {
+    color: #fff;
+    border-color: #0d6efd;
+}
+
+.navbar .btn-outline-info {
+    color: #fff;
+    border-color: #0dcaf0;
+}
+
+.navbar .btn-outline-success {
+    color: #fff;
+    border-color: #198754;
+}
+
+.navbar .btn-outline-danger {
+    color: #fff;
+    border-color: #dc3545;
+}
+
+.navbar .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.navbar .btn-outline-info:hover {
+    background-color: #0dcaf0;
+    color: #fff;
+}
+
+.navbar .btn-outline-success:hover {
+    background-color: #198754;
+    color: #fff;
+}
+
+.navbar .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: #fff;
+}

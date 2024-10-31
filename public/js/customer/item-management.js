@@ -79,31 +79,35 @@ $(document).ready(function() {
                         </div>`;
                 } else {
                     items.forEach(item => {
-                        // Ambil gambar pertama dari array files jika ada
-                        let imageUrl = '/img/no-image.jpg'; // Default image
+                        let imageUrl = '/img/no-image.jpg';
                         if (item.files && item.files.length > 0) {
                             imageUrl = `/storage/${item.files[0].file_path}`;
                         }
 
                         itemsHtml += `
                             <div class="col-md-4 mb-4">
-                                <div class="card h-100">
-                                    <img src="${imageUrl}" class="card-img-top" 
-                                         alt="${item.name}" 
-                                         style="height: 200px; object-fit: cover;">
-                                    <div class="card-body d-flex flex-column">
+                                <div class="card">
+                                    <div class="position-relative">
+                                        <img src="${imageUrl}" class="card-img-top" alt="${item.name}">
+                                        <span class="badge-stock">Stock: ${item.stock} pcs</span>
+                                    </div>
+                                    <div class="card-body">
                                         <h5 class="card-title">${item.name}</h5>
-                                        <p class="card-text">${item.description}</p>
+                                        <p class="card-text">${item.description || 'Berkualitas'}</p>
                                         <p class="price">Rp${Number(item.sellprice).toLocaleString('id-ID')}</p>
-                                        <div class="mt-auto">
-                                            <div class="input-group mb-3">
-                                                <input type="number" class="form-control item-quantity" 
-                                                    data-id="${item.id}" value="0" min="0">
-                                                <button class="btn btn-primary add-to-cart" 
-                                                    data-id="${item.id}">
-                                                    <i class="bi bi-cart-plus"></i> Tambah
-                                                </button>
-                                            </div>
+                                        <div class="input-group">
+                                            <input type="number" 
+                                                class="form-control item-quantity" 
+                                                data-id="${item.id}" 
+                                                value="0" 
+                                                min="0"
+                                                max="${item.stock}"
+                                                ${item.stock <= 0 ? 'disabled' : ''}>
+                                            <button class="btn btn-primary add-to-cart" 
+                                                data-id="${item.id}"
+                                                ${item.stock <= 0 ? 'disabled' : ''}>
+                                                <i class="bi bi-cart-plus"></i> Tambah
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -242,13 +246,38 @@ $(document).ready(function() {
         }
     };
 
-    // Event handler untuk tombol tambah ke keranjang
+    // Tambahkan event handler untuk input quantity
+    $(document).on('input', '.item-quantity', function() {
+        const maxStock = parseInt($(this).attr('max'));
+        let currentValue = parseInt($(this).val()) || 0;
+
+        // Validasi input tidak boleh melebihi stock
+        if (currentValue > maxStock) {
+            $(this).val(maxStock);
+            showSweetAlert(`Maksimal pembelian ${maxStock} unit`, 'warning');
+        }
+        
+        // Validasi input tidak boleh negatif
+        if (currentValue < 0) {
+            $(this).val(0);
+        }
+    });
+
+    // Update event handler add-to-cart
     $(document).on('click', '.add-to-cart', function() {
         const itemId = $(this).data('id');
-        const quantity = $(this).closest('.card-body').find('.item-quantity').val();
+        const quantityInput = $(this).closest('.card-body').find('.item-quantity');
+        const quantity = parseInt(quantityInput.val());
+        const maxStock = parseInt(quantityInput.attr('max'));
 
         if (quantity <= 0) {
             showSweetAlert('Jumlah item harus lebih dari 0', 'error');
+            return;
+        }
+
+        if (quantity > maxStock) {
+            showSweetAlert(`Maksimal pembelian ${maxStock} unit`, 'error');
+            quantityInput.val(maxStock);
             return;
         }
 
@@ -265,7 +294,7 @@ $(document).ready(function() {
             success: function(response) {
                 showSweetAlert('Item berhasil ditambahkan ke keranjang', 'success');
                 // Reset input quantity
-                $(`input[data-id="${itemId}"]`).val(0);
+                quantityInput.val(0);
             },
             error: handleAjaxError
         });

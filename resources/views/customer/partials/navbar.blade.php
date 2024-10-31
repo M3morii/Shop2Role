@@ -1,11 +1,21 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <h1 class="navbar-brand mb-0">Dashboard Customer</h1>
+        <h1 class="navbar-brand mb-0">
+            <i class="bi bi-shop"></i> Dashboard Customer
+        </h1>
         <div class="d-flex">
-            <button id="viewCart" class="btn btn-primary me-2">Cek Keranjang</button>
-            <button id="viewInvoice" class="btn btn-info text-white me-2">Cek Invoice</button>
-            <button id="viewOrders" class="btn btn-success me-2">Cek Pesanan</button>
-            <button id="logoutBtn" class="btn btn-danger">Logout</button>
+            <button id="viewCart" class="btn btn-outline-primary me-2">
+                <i class="bi bi-cart"></i> Keranjang
+            </button>
+            <button id="viewInvoice" class="btn btn-outline-success me-2">
+                <i class="bi bi-receipt"></i> Invoice
+            </button>
+            <button id="viewOrders" class="btn btn-outline-warning me-2">
+                <i class="bi bi-bag"></i> Pesanan
+            </button>
+            <button id="logoutBtn" class="btn btn-outline-danger">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
         </div>
     </div>
 </nav>

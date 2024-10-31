@@ -68,7 +68,12 @@ $(document).ready(function() {
                         </div>
                     </div>
                 `;
-                $('#orderBtn').show();
+
+                if (totalAmount <= 0) {
+                    $('#orderBtn').hide();
+                } else {
+                    $('#orderBtn').show();
+                }
             }
 
             $('#cartContent').html(cartHtml);

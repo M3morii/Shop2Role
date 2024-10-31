@@ -12,98 +12,58 @@ $(document).ready(function() {
             },
             success: function(response) {
                 let invoiceHtml = `
-                    <div class="modal fade" id="invoiceModal" tabindex="-1">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Daftar Invoice</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>No. Invoice</th>
+                                    <th>Tanggal</th>
+                                    <th>Item</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                 `;
 
-                if (response.length === 0) {
-                    invoiceHtml += '<p class="text-center">Tidak ada invoice</p>';
+                if (!response || response.length === 0) {
+                    invoiceHtml += '<tr><td colspan="5" class="text-center">Tidak ada riwayat pembelian</td></tr>';
                 } else {
-                    invoiceHtml += `
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>No. Invoice</th>
-                                        <th>Tanggal</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Detail</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                    `;
-
                     response.forEach(invoice => {
-                        const invoiceDate = new Date(invoice.created_at).toLocaleDateString('id-ID');
+                        // Format tanggal
+                        const date = new Date(invoice.purchase_date);
+                        const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+                        
+                        // Format items dan quantity
+                        const items = invoice.orders.map(order => 
+                            `${order.item_name} (${order.quantity} pcs)`
+                        ).join('<br>');
+                        
+                        // Format harga
+                        const total = invoice.total_price || 0;
                         
                         invoiceHtml += `
                             <tr>
-                                <td>${invoice.id}</td>
-                                <td>${invoiceDate}</td>
-                                <td>Rp${Number(invoice.total_amount).toLocaleString('id-ID')}</td>
-                                <td>${invoice.status}</td>
-                                <td>
-                                    <button class="btn btn-info btn-sm view-invoice-detail" data-id="${invoice.id}">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
+                                <td>#INV-${invoice.id}</td>
+                                <td>${formattedDate}</td>
+                                <td>${items}</td>
+                                <td>Rp ${total.toLocaleString('id-ID')}</td>
+                                <td><span class="badge bg-success">Disetujui</span></td>
                             </tr>
                         `;
                     });
-
-                    invoiceHtml += `
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
                 }
 
                 invoiceHtml += `
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                </div>
-                            </div>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
                 `;
 
-                // Remove existing modal if any
-                $('#invoiceModal').remove();
-                // Add new modal to body
-                $('body').append(invoiceHtml);
-                // Show the modal
+                $('#invoiceContent').html(invoiceHtml);
                 $('#invoiceModal').modal('show');
             },
             error: handleAjaxError
         });
     };
-
-    // Event handler untuk melihat detail invoice
-    $(document).on('click', '.view-invoice-detail', function() {
-        const invoiceId = $(this).data('id');
-        viewInvoiceDetail(invoiceId);
-    });
-
-    function viewInvoiceDetail(invoiceId) {
-        $.ajax({
-            url: `/api/invoice/${invoiceId}`,
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + getToken()
-            },
-            success: function(response) {
-                // Implementasi tampilan detail invoice
-                console.log(response);
-            },
-            error: handleAjaxError
-        });
-    }
 });

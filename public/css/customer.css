@@ -1,10 +1,12 @@
 .card {
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
     transition: transform 0.2s;
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .card-img-top {
@@ -12,86 +14,55 @@
     object-fit: cover;
 }
 
+.card-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.card-text {
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.stock-text {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
 .price {
-    font-size: 1.2rem;
-    font-weight: bold;
     color: #28a745;
-    margin-bottom: 0.5rem;
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.input-group {
+    margin-top: 10px;
+}
+
+.input-group input {
+    text-align: center;
+}
+
+.position-relative {
+    position: relative;
 }
 
 .badge-stock {
-    font-size: 0.9rem;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1;
 }
 
-.total-price {
-    font-weight: bold;
-    color: #28a745;
-}
-
-.card-actions {
-    margin-top: auto;
-}
-
-#messageContainer {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1050;
-}
-/* Navbar Styling */
-.navbar {
-    box-shadow: 0 2px 4px rgba(0,0,0,.1);
-}
-
-.navbar-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
-}
-
-.navbar .btn {
-    transition: all 0.3s ease;
-}
-
-.navbar .btn:hover {
-    transform: translateY(-2px);
-}
-
-.navbar .btn-outline-primary {
-    color: #fff;
-    border-color: #0d6efd;
-}
-
-.navbar .btn-outline-info {
-    color: #fff;
-    border-color: #0dcaf0;
-}
-
-.navbar .btn-outline-success {
-    color: #fff;
-    border-color: #198754;
-}
-
-.navbar .btn-outline-danger {
-    color: #fff;
-    border-color: #dc3545;
-}
-
-.navbar .btn-outline-primary:hover {
-    background-color: #0d6efd;
-    color: #fff;
-}
-
-.navbar .btn-outline-info:hover {
-    background-color: #0dcaf0;
-    color: #fff;
-}
-
-.navbar .btn-outline-success:hover {
-    background-color: #198754;
-    color: #fff;
-}
-
-.navbar .btn-outline-danger:hover {
-    background-color: #dc3545;
-    color: #fff;
+.card:hover .badge-stock {
+    background-color: rgba(40, 167, 69, 0.9);
+    transition: background-color 0.3s ease;
 }
